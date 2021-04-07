@@ -1,25 +1,26 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# !!! get_metadata() method of WindowsDataset not working!
-
 # 1. Divide the data into training (2/3 of data) and validation (1/3 of data)
 	# partitions.
+# 2. Load all subjects for inter-subject anaylsis.
 
 
 
-"""Preprocessing the 5F dataset data.
+"""Loading, preprocessing and windowing the validation/traning data of the 5F
+dataset.
 
 Parameters
 ----------
-sfreq : int
-		Downsampling frequency.
-project_dir : str
-		Directory of the project folder.
+args : Namespace
+		Input arguments.
 
-Output
--------
-Braindecode windows of the 5F data.
+Returns
+----------
+valid_set : BaseConcatDataset
+		Validation data.
+train_set : BaseConcatDataset
+		Training data.
 
 """
 
@@ -104,7 +105,7 @@ for i, file in enumerate(files):
 
 
 ### Converting to BaseConcatDataset format ###
-	description = {"subject":{"0":i+1}}
+	description = {"subject": i+1}
 	dataset = BaseDataset(raw, description)
 	dataset = BaseConcatDataset([dataset])
 	del raw

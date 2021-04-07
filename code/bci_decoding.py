@@ -27,10 +27,6 @@ model : str
 		Used neural network model ['ShallowFBCSPNet', 'Deep4Net'].
 cropped : bool
 		Whether to use cropped trials or not.
-l_freq : int
-		Low cut frequency for filtering.
-h_freq : int
-		High cut frequency for filtering.
 n_epochs : int
 		Number of training epochs.
 lr : float
@@ -56,8 +52,9 @@ import argparse
 import numpy as np
 import os
 
-from bci_decoding_utils import prepr_definition
-from bci_decoding_utils import load_data
+from bci_decoding_utils import load_bci_iv_2a
+from bci_decoding_utils import load_5f
+from bci_decoding_utils import load_halt
 
 from braindecode.util import set_random_seeds
 from braindecode.models.shallow_fbcsp import ShallowFBCSPNet
@@ -79,8 +76,6 @@ parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--cropped', type=bool, default=False)
-parser.add_argument('--l_freq', type=int, default=0.53)
-parser.add_argument('--h_freq', type=int, default=100)
 parser.add_argument('--n_epochs', type=int, default=10)
 parser.add_argument('--lr', type=float, default=0.0625 * 0.01)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
@@ -104,6 +99,10 @@ for key, val in vars(args).items():
 # =============================================================================
 if args.dataset == 'bci_iv_2a':
 	args.tot_sub = 9
+elif args.dataset == '5f':
+	args.tot_sub = 8
+elif args.dataset == 'halt':
+	args.tot_sub = 12
 
 
 
@@ -135,10 +134,18 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading, preprocessing and windowing the data
 # =============================================================================
-valid_set, train_set = load_data(args, prepr_definition(args))
+if args.dataset == 'bci_iv_2a':
+	valid_set, train_set = load_bci_iv_2a(args)
+elif args.dataset == '5f':
+	valid_set, train_set = load_5f(args)
+elif args.dataset == 'halt':
+	valid_set, train_set = load_halt(args)
+
 
 # Getting EEG data info
 args.freq = valid_set.datasets[0].windows.info['sfreq']
+args.l_freq = valid_set.datasets[0].windows.info['highpass']
+args.h_freq = valid_set.datasets[0].windows.info['lowpass']
 args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 		args.freq)
 args.in_chans = valid_set.datasets[0].windows.info['nchan']
