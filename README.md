@@ -47,6 +47,7 @@ The decoding analysis is performed using shallow and deep CNN architectures, as 
 [schirrmeister]: https://arxiv.org/abs/1703.05051v1
 
 
+
 ## Inter-subject learning
 
 
