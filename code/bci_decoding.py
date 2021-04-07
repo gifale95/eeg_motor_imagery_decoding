@@ -18,7 +18,7 @@
 Parameters
 ----------
 dataset : str
-		Used dataset ['bci_iv_2a', 'HaLT', '5F'].
+		Used dataset ['bci_iv_2a', 'halt', '5F'].
 test_sub : int
 		Used test subject.
 inter_subject : bool
@@ -53,8 +53,7 @@ import numpy as np
 import os
 
 from bci_decoding_utils import load_bci_iv_2a
-from bci_decoding_utils import load_5f
-from bci_decoding_utils import load_halt
+from bci_decoding_utils import load_5f_halt
 
 from braindecode.util import set_random_seeds
 from braindecode.models.shallow_fbcsp import ShallowFBCSPNet
@@ -71,7 +70,7 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='bci_iv_2a')
+parser.add_argument('--dataset', type=str, default='5f')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
@@ -134,13 +133,11 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading, preprocessing and windowing the data
 # =============================================================================
+print('\n\n>>> Loading, preprocessing and windowing the data <<<')
 if args.dataset == 'bci_iv_2a':
 	valid_set, train_set = load_bci_iv_2a(args)
-elif args.dataset == '5f':
-	valid_set, train_set = load_5f(args)
-elif args.dataset == 'halt':
-	valid_set, train_set = load_halt(args)
-
+else:
+	valid_set, train_set = load_5f_halt(args)
 
 # Getting EEG data info
 args.freq = valid_set.datasets[0].windows.info['sfreq']
