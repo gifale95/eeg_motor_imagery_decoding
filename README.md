@@ -10,7 +10,7 @@ This repository provides Python code for the decoding of different motor imagery
 Motor imagery dataset (Brunner et al., 2008) of 9 subjects with 4 motor imagery coditions: left hand, right hand, both feet, tongue. Each condition has 144 four-second trials, recorded using 22 EEG channels. Data and the accompanying paper can be found at http://bbci.de/competition/iv/#dataset2a.
 
 #### 5F dataset
-9 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has approximately 180 one-second trials. Data and the accompanying paper can be found [here][kaya].
+9 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has approximately 180 one-second trials. Data and the accompanying paper can be found [here][kaya].
 The following data files were used for the analysis:
 1. 5F-SubjectA-160408-5St-SGLHand-HFREQ.mat
 2. 5F-SubjectB-160309-5St-SGLHand-HFREQ.mat
@@ -42,7 +42,7 @@ The following data files were used for the analysis:
 
 
 ## CNN models
-The decoding analysis is performed using shallow and deep CNN architectures, both described in [Schirrmeister et al., 2018][schirrmeister].
+The decoding analysis is performed using shallow and deep CNN architectures, as described in [Schirrmeister et al., 2018][schirrmeister].
 
 [schirrmeister]: https://arxiv.org/abs/1703.05051v1
 
