@@ -20,6 +20,7 @@ The following data files were used for the analysis:
 6. 5F-SubjectG-160413-5St-SGLHand-HFREQ.mat 
 7. 5F-SubjectH-160804-5St-SGLHand-HFREQ.mat
 8. 5F-SubjectI-160719-5St-SGLHand-HFREQ.mat
+
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 ####HaLT dataset
@@ -42,6 +43,7 @@ The following data files were used for the analysis:
 
 ## CNN models
 The decoding analysis is performed using shallow and deep CNN architectures, both described in [Schirrmeister et al., 2018][schirrmeister].
+
 [schirrmeister]: https://arxiv.org/abs/1703.05051v1
 
 
