@@ -2,8 +2,11 @@
 # TO DO
 # =============================================================================
 # 1. Use cropped trials.
-# 2. When training the inter-subject model, make sure that each batch of
-	# training data has an equal amount of trials from the different subjects.
+# 2. 5F dataset not decodable:
+	# Check for errors while importing!
+	# Keep sfreq at 1000Hz.
+	# Filter between 4Hz & 40Hz.
+	# Increase regularization strength.
 
 # 3. Model hyperparameter optimization (learning rate, weight decay).
 # 4. EEG hyperparameter optimization (downsampling frequency, number of used
@@ -70,9 +73,9 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='halt')
-parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--dataset', type=str, default='5f')
+parser.add_argument('--test_sub', type=int, default=8)
+parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='Deep4Net')
 parser.add_argument('--cropped', type=bool, default=False)
 parser.add_argument('--n_epochs', type=int, default=50)
@@ -175,6 +178,10 @@ elif args.model == 'Deep4Net':
 			input_window_samples=args.input_window_samples,
 			final_conv_length='auto'
 	)
+
+# Send model to GPU
+if cuda:
+    model.cuda()
 
 
 
