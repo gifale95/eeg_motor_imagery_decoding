@@ -1,15 +1,14 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Separate function for windowing data (edit load_bci_iv_2a).
-# 2. Use cropped trials.
-# 3. When training the inter-subject model, make sure that each batch of
+# 1. Use cropped trials.
+# 2. When training the inter-subject model, make sure that each batch of
 	# training data has an equal amount of trials from the different subjects.
 
-# 4. Model hyperparameter optimization (learning rate, weight decay).
-# 5. EEG hyperparameter optimization (downsampling frequency, number of used
+# 3. Model hyperparameter optimization (learning rate, weight decay).
+# 4. EEG hyperparameter optimization (downsampling frequency, number of used
 	# channels, low- and high-frequency cuts).
-# 6. Use other models.
+# 5. Use other models.
 
 
 
@@ -18,11 +17,11 @@
 Parameters
 ----------
 dataset : str
-		Used dataset ['bci_iv_2a', 'halt', '5F'].
+		Used dataset ['bci_iv_2a', 'halt', '5f'].
 test_sub : int
 		Used test subject.
 inter_subject : bool
-		Whether to apply or not inter-subject generalization.
+		Whether to apply or not inter-subject learning.
 model : str
 		Used neural network model ['ShallowFBCSPNet', 'Deep4Net'].
 cropped : bool
@@ -71,12 +70,12 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f')
+parser.add_argument('--dataset', type=str, default='halt')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=True)
-parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
+parser.add_argument('--model', type=str, default='Deep4Net')
 parser.add_argument('--cropped', type=bool, default=False)
-parser.add_argument('--n_epochs', type=int, default=10)
+parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.0625 * 0.01)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.5)
@@ -134,34 +133,23 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading, preprocessing and windowing the data
 # =============================================================================
-print('\n\n>>> Loading, preprocessing and windowing the data <<<')
+print('\n\n>>> Loading, preprocessing and windowing the data <<<\n\n')
 # Loading and preprocessing the data
 if args.dataset == 'bci_iv_2a':
 	dataset = load_bci_iv_2a(args)
 else:
 	dataset = load_5f_halt(args)
 
-
-
-
-
-
-
-
-
-
-
-
-
 # Windowing and dividing into validation and training sets
 valid_set, train_set = windowing_data(dataset, args)
+del dataset
 
 # Getting EEG data info
-args.freq = valid_set.datasets[0].windows.info['sfreq']
+args.sfreq = valid_set.datasets[0].windows.info['sfreq']
 args.l_freq = valid_set.datasets[0].windows.info['highpass']
 args.h_freq = valid_set.datasets[0].windows.info['lowpass']
 args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
-		args.freq)
+		args.sfreq)
 args.in_chans = valid_set.datasets[0].windows.info['nchan']
 args.ch_names = valid_set.datasets[0].windows.info['ch_names']
 args.input_window_samples = valid_set[0][0].shape[1]
@@ -194,18 +182,18 @@ elif args.model == 'Deep4Net':
 # Training the model
 # =============================================================================
 clf = EEGClassifier(
-	model,
-	criterion=torch.nn.NLLLoss,
-	optimizer=torch.optim.AdamW,
-	train_split=predefined_split(valid_set), # using valid_set for validation
-	optimizer__lr=args.lr,
-	optimizer__weight_decay=args.wd,
-	batch_size=args.batch_size,
-	callbacks=[
-			"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
-			T_max=args.n_epochs - 1)),
-	],
-	device=args.device,
+		model,
+		criterion=torch.nn.NLLLoss,
+		optimizer=torch.optim.AdamW,
+		train_split=predefined_split(valid_set), # using valid_set for validation
+		optimizer__lr=args.lr,
+		optimizer__weight_decay=args.wd,
+		batch_size=args.batch_size,
+		callbacks=[
+				"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
+				T_max=args.n_epochs - 1)),
+		],
+		device=args.device,
 )
 
 # Model training for a specified number of epochs. "y" is None as it is already
