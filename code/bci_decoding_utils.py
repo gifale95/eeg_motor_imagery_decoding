@@ -92,7 +92,7 @@ def load_5f_halt(args):
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Load all subjects for inter-subject anaylsis.
+# 1. Load all subjects for inter-subject anaylsis!
 	"""Loading, preprocessing and windowing the validation/traning data of the
 	5F or HaLT dataset.
 
@@ -139,8 +139,6 @@ def load_5f_halt(args):
 	unused_chans = np.asarray((10, 11, 21))
 	idx_chan[unused_chans] = False
 
-	train = []
-	val = []
 ### Loading and preprocessing the .mat data ###
 	for i, file in enumerate(files):
 		data = io.loadmat(os.path.join(data_dir, file),
@@ -232,8 +230,6 @@ def load_5f_halt(args):
 		train_set = windows_dataset.split('session')
 		valid_set = train_set['session_E']
 		train_set = train_set['session_T']
-		train.append(train_set.datasets[0].windows)
-		val.append(valid_set.datasets[0].windows)
 
 ### Output ###
 	return valid_set, train_set
