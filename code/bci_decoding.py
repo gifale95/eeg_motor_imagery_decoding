@@ -1,16 +1,15 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Datasets: 5F, HaLT.
-# 2. Separate function for windowing data.
-# 3. Use cropped trials.
-# 4. When training the inter-subject model, make sure that each batch of
+# 1. Separate function for windowing data (edit load_bci_iv_2a).
+# 2. Use cropped trials.
+# 3. When training the inter-subject model, make sure that each batch of
 	# training data has an equal amount of trials from the different subjects.
 
-# 5. Model hyperparameter optimization (learning rate, weight decay).
-# 6. EEG hyperparameter optimization (downsampling frequency, number of used
+# 4. Model hyperparameter optimization (learning rate, weight decay).
+# 5. EEG hyperparameter optimization (downsampling frequency, number of used
 	# channels, low- and high-frequency cuts).
-# 7. Use other models.
+# 6. Use other models.
 
 
 
@@ -55,6 +54,7 @@ import os
 
 from bci_decoding_utils import load_bci_iv_2a
 from bci_decoding_utils import load_5f_halt
+from bci_decoding_utils import windowing_data
 
 from braindecode.util import set_random_seeds
 from braindecode.models.shallow_fbcsp import ShallowFBCSPNet
@@ -71,9 +71,9 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='halt')
+parser.add_argument('--dataset', type=str, default='5f')
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--inter_subject', type=bool, default=False)
+parser.add_argument('--inter_subject', type=bool, default=True)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--cropped', type=bool, default=False)
 parser.add_argument('--n_epochs', type=int, default=10)
@@ -135,10 +135,26 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # Loading, preprocessing and windowing the data
 # =============================================================================
 print('\n\n>>> Loading, preprocessing and windowing the data <<<')
+# Loading and preprocessing the data
 if args.dataset == 'bci_iv_2a':
-	valid_set, train_set = load_bci_iv_2a(args)
+	dataset = load_bci_iv_2a(args)
 else:
-	valid_set, train_set = load_5f_halt(args)
+	dataset = load_5f_halt(args)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Windowing and dividing into validation and training sets
+valid_set, train_set = windowing_data(dataset, args)
 
 # Getting EEG data info
 args.freq = valid_set.datasets[0].windows.info['sfreq']

@@ -89,12 +89,8 @@ def load_bci_iv_2a(args):
 
 
 def load_5f_halt(args):
-# =============================================================================
-# TO DO
-# =============================================================================
-# 1. Load all subjects for inter-subject anaylsis!
-	"""Loading, preprocessing and windowing the validation/traning data of the
-	5F or HaLT dataset.
+	"""Loading and preprocessing the validation/traning data of the 5F or HaLT
+	dataset.
 
 	Parameters
 	----------
@@ -103,10 +99,8 @@ def load_5f_halt(args):
 
 	Returns
 	----------
-	valid_set : BaseConcatDataset
-			Validation data.
-	train_set : BaseConcatDataset
-			Training data.
+	dataset : BaseConcatDataset
+			BaseConcatDataset of raw MNE arrays.
 
 	"""
 
@@ -116,17 +110,6 @@ def load_5f_halt(args):
 	import mne
 	from braindecode.datautil import exponential_moving_standardize
 	from braindecode.datasets import BaseDataset, BaseConcatDataset
-	from braindecode.datautil.windowers import create_windows_from_events
-
-### Subjects ###
-	if args.dataset == '5f':
-		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
-				'used_data')
-	elif args.dataset == 'halt':
-		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data',
-				'used_data')
-	files = os.listdir(data_dir)
-	files.sort()
 
 ### Channel types ###
 # Rejecting channels A1, A1, X5 (see paper)
@@ -138,6 +121,20 @@ def load_5f_halt(args):
 	idx_chan = np.ones(22, dtype=bool)
 	unused_chans = np.asarray((10, 11, 21))
 	idx_chan[unused_chans] = False
+
+### Subjects ###
+	dataset = []
+	if args.dataset == '5f':
+		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
+				'used_data')
+	elif args.dataset == 'halt':
+		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data',
+				'used_data')
+	files = os.listdir(data_dir)
+	files.sort()
+	# Loading only one subject for intra-subject analysis
+	if args.inter_subject == False:
+		files = [files[args.test_sub-1]]
 
 ### Loading and preprocessing the .mat data ###
 	for i, file in enumerate(files):
@@ -156,6 +153,7 @@ def load_5f_halt(args):
 		raw_train.info['highpass'] = 0.53
 		if args.dataset == '5f':
 			raw_train.info['lowpass'] = 100
+			raw_train.resample(250) # resampling 5F data to 250Hz
 		elif args.dataset == 'halt':
 			raw_train.info['lowpass'] = 70
 		del data
@@ -207,30 +205,58 @@ def load_5f_halt(args):
 		raw_val.set_annotations(annotations_val)
 
 ### Converting to BaseConcatDataset format ###
+		if args.inter_subject == False:
+			i = args.test_sub-1
 		description_train = {"subject": i+1, "session": 'session_T'}
 		description_val = {"subject": i+1, "session": 'session_E'}
-		dataset_train = BaseDataset(raw_train, description_train)
-		dataset_val = BaseDataset(raw_val, description_val)
-		dataset = BaseConcatDataset([dataset_train, dataset_val])
-		del raw_train, raw_val
-
-### Windowing the data ###
-		# Windowing arguments
-		trial_start_offset_seconds = -0.5
-		trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)
-		# Create WindowsDatasets from mne.RawArrays
-		windows_dataset = create_windows_from_events(
-			dataset,
-			trial_start_offset_samples=trial_start_offset_samples,
-			trial_stop_offset_samples=0,
-			preload=True,
-		)
-
-### Dividing the windows into training and validation ###
-		train_set = windows_dataset.split('session')
-		valid_set = train_set['session_E']
-		train_set = train_set['session_T']
+		dataset.append(BaseDataset(raw_train, description_train))
+		dataset.append(BaseDataset(raw_val, description_val))
+	dataset = BaseConcatDataset(dataset)
 
 ### Output ###
-	return valid_set, train_set
+	return dataset
+
+
+
+def windowing_data(dataset, args):
+	"""Windowing the preprocessed data.
+
+	Parameters
+	----------
+	dataset : BaseConcatDataset
+			BaseConcatDataset of raw MNE arrays.
+	args : Namespace
+			Input arguments.
+
+	Returns
+	----------
+	valid_data : BaseConcatDataset
+			BaseConcatDataset of windowed validation data.
+	train_data : BaseConcatDataset
+			BaseConcatDataset of windowed training data.
+
+	"""
+
+	from braindecode.datautil.windowers import create_windows_from_events
+
+# 	
+# ### Windowing the data ###
+# 		# Windowing arguments
+# 		trial_start_offset_seconds = -0.5
+# 		trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)
+# 		# Create WindowsDatasets from mne.RawArrays
+# 		windows_dataset = create_windows_from_events(
+# 			dataset,
+# 			trial_start_offset_samples=trial_start_offset_samples,
+# 			trial_stop_offset_samples=0,
+# 			preload=True,
+# 		)
+
+# ### Dividing the windows into training and validation ###
+# 		train_set = windows_dataset.split('session')
+# 		valid_set = train_set['session_E']
+# 		train_set = train_set['session_T']
+
+# ### Output ###
+# 	return valid_set, train_set
 
