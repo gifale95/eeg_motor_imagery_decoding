@@ -20,7 +20,7 @@ def load_bci_iv_2a(args):
 	from braindecode.datasets.moabb import MOABBDataset
 	from braindecode.datautil.preprocess import preprocess
 
-### Loading the data ###
+	### Loading the data ###
 	if args.inter_subject == False:
 		dataset = MOABBDataset(dataset_name="BNCI2014001",
 				subject_ids=args.test_sub)
@@ -28,7 +28,7 @@ def load_bci_iv_2a(args):
 		dataset = MOABBDataset(dataset_name="BNCI2014001",
 				subject_ids=list(np.arange(1, args.tot_sub+1)))
 
-### Preprocessing the data ###
+	### Preprocessing the data ###
 	# Defining the preprocessor
 	preprocessors = [
 			# Keep only EEG sensors
@@ -42,7 +42,7 @@ def load_bci_iv_2a(args):
 	# Preprocessing
 	preprocess(dataset, preprocessors)
 
-### Output ###
+	### Output ###
 	return dataset
 
 
@@ -70,8 +70,8 @@ def load_5f_halt(args):
 	from braindecode.datautil import exponential_moving_standardize
 	from braindecode.datasets import BaseDataset, BaseConcatDataset
 
-### Channel types ###
-# Rejecting channels A1, A1, X5 (see paper)
+	### Channel types ###
+	# Rejecting channels A1, A1, X5 (see paper)
 	ch_names = ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2",
 			"F7", "F8", "T3", "T4", "T5", "T6", "Fz", "Cz", "Pz", "stim"]
 	ch_types = ["eeg", "eeg", "eeg", "eeg", "eeg", "eeg", "eeg", "eeg", "eeg",
@@ -81,7 +81,7 @@ def load_5f_halt(args):
 	unused_chans = np.asarray((10, 11, 21))
 	idx_chan[unused_chans] = False
 
-### Subjects ###
+	### Subjects ###
 	dataset = []
 	if args.dataset == '5f':
 		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
@@ -95,7 +95,7 @@ def load_5f_halt(args):
 	if args.inter_subject == False:
 		files = [files[args.test_sub-1]]
 
-### Loading and preprocessing the .mat data ###
+	### Loading and preprocessing the .mat data ###
 	for i, file in enumerate(files):
 		data = io.loadmat(os.path.join(data_dir, file),
 				chars_as_strings=True)['o']
@@ -106,7 +106,7 @@ def load_5f_halt(args):
 		data = np.append(data, marker, 0)
 		del marker
 
-### Converting to MNE format ###
+	### Converting to MNE format ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
 		raw_train.info['highpass'] = 0.53
@@ -117,7 +117,7 @@ def load_5f_halt(args):
 			raw_train.info['lowpass'] = 70
 		del data
 
-### Get events ###
+	### Get events ###
 		events = mne.find_events(raw_train, stim_channel='stim', output='onset',
 				consecutive='increasing')
 		# Drop unused events
@@ -129,7 +129,7 @@ def load_5f_halt(args):
 		# Drop stimuli channel
 		raw_train.pick_types(eeg=True)
 
-### Dividing events into training and validation ###
+	### Dividing events into training and validation ###
 		# The training data has 150 trials per condition, and the validation
 		# data has 50 trials per condition.
 		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
@@ -144,7 +144,7 @@ def load_5f_halt(args):
 		events_train = events[idx_train,:]
 		events_val = events[idx_val,:]
 
-### Creating the raw data annotations ###
+	### Creating the raw data annotations ###
 		if args.dataset == '5f':
 			event_desc = {1: 'thumb', 2: 'index_finger', 3: 'middle_finger',
 					4: 'ring_finger', 5: 'pinkie_finger'}
@@ -163,7 +163,7 @@ def load_5f_halt(args):
 		raw_train.set_annotations(annotations_train)
 		raw_val.set_annotations(annotations_val)
 
-### Converting to BaseConcatDataset format ###
+	### Converting to BaseConcatDataset format ###
 		if args.inter_subject == False:
 			i = args.test_sub-1
 		description_train = {"subject": i+1, "session": 'session_T'}
@@ -172,7 +172,7 @@ def load_5f_halt(args):
 		dataset.append(BaseDataset(raw_val, description_val))
 	dataset = BaseConcatDataset(dataset)
 
-### Output ###
+	### Output ###
 	return dataset
 
 
@@ -200,7 +200,7 @@ def windowing_data(dataset, args):
 	from braindecode.datautil.windowers import create_windows_from_events
 	from braindecode.datasets import BaseConcatDataset
 
-### Windowing the data ###
+	### Windowing the data ###
 	# Extract sampling frequency, check that they are same in all datasets
 	sfreq = dataset.datasets[0].raw.info['sfreq']
 	assert all([ds.raw.info['sfreq'] == sfreq for ds in dataset.datasets])
@@ -215,13 +215,13 @@ def windowing_data(dataset, args):
 	)
 	del dataset
 
-### Dividing training and validation data ###
+	### Dividing training and validation data ###
 	windows_dataset = windows_dataset.split('session')
 	valid_set = windows_dataset['session_E']
 	train_set = windows_dataset['session_T']
 	del windows_dataset
 
-### Selecting the right train/validation data for inter-subject analysis ###
+	### Selecting the right train/validation data for inter-subject analysis ###
 	if args.inter_subject == True:
 		valid_set = valid_set.split('subject')
 		valid_set = valid_set[str(args.test_sub)]
@@ -232,6 +232,6 @@ def windowing_data(dataset, args):
 				train_list.append(train_set[str(s+1)])
 		train_set = BaseConcatDataset(train_list)
 
-### Output ###
+	### Output ###
 	return valid_set, train_set
 
