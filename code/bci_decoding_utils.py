@@ -106,7 +106,7 @@ def load_5f_halt(args):
 		data = np.append(data, marker, 0)
 		del marker
 
-	### Converting to MNE format ###
+		### Converting to MNE format ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
 		raw_train.info['highpass'] = 0.53
@@ -117,7 +117,7 @@ def load_5f_halt(args):
 			raw_train.info['lowpass'] = 70
 		del data
 
-	### Get events ###
+		### Get events ###
 		events = mne.find_events(raw_train, stim_channel='stim', output='onset',
 				consecutive='increasing')
 		# Drop unused events
@@ -129,7 +129,7 @@ def load_5f_halt(args):
 		# Drop stimuli channel
 		raw_train.pick_types(eeg=True)
 
-	### Dividing events into training and validation ###
+		### Dividing events into training and validation ###
 		# The training data has 150 trials per condition, and the validation
 		# data has 50 trials per condition.
 		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
@@ -144,7 +144,7 @@ def load_5f_halt(args):
 		events_train = events[idx_train,:]
 		events_val = events[idx_val,:]
 
-	### Creating the raw data annotations ###
+		### Creating the raw data annotations ###
 		if args.dataset == '5f':
 			event_desc = {1: 'thumb', 2: 'index_finger', 3: 'middle_finger',
 					4: 'ring_finger', 5: 'pinkie_finger'}
@@ -163,7 +163,7 @@ def load_5f_halt(args):
 		raw_train.set_annotations(annotations_train)
 		raw_val.set_annotations(annotations_val)
 
-	### Converting to BaseConcatDataset format ###
+		### Converting to BaseConcatDataset format ###
 		if args.inter_subject == False:
 			i = args.test_sub-1
 		description_train = {"subject": i+1, "session": 'session_T'}
