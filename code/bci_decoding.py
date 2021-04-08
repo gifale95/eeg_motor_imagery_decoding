@@ -2,14 +2,15 @@
 # TO DO
 # =============================================================================
 # 1. Datasets: 5F, HaLT.
-# 2. Use cropped trials.
-# 3. When training the inter-subject model, make sure that each batch of
+# 2. Separate function for windowing data.
+# 3. Use cropped trials.
+# 4. When training the inter-subject model, make sure that each batch of
 	# training data has an equal amount of trials from the different subjects.
 
-# 4. Model hyperparameter optimization (learning rate, weight decay).
-# 5. EEG hyperparameter optimization (downsampling frequency, number of used
+# 5. Model hyperparameter optimization (learning rate, weight decay).
+# 6. EEG hyperparameter optimization (downsampling frequency, number of used
 	# channels, low- and high-frequency cuts).
-# 6. Use other models.
+# 7. Use other models.
 
 
 
@@ -70,7 +71,7 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f')
+parser.add_argument('--dataset', type=str, default='halt')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')

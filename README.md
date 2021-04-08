@@ -10,7 +10,7 @@ This repository provides Python code for the decoding of different motor imagery
 Motor imagery dataset (Brunner et al., 2008) of 9 subjects with 4 motor imagery coditions: left hand, right hand, both feet, tongue. Each condition has 144 four-second trials, recorded using 22 EEG channels. Data and the accompanying paper can be found at http://bbci.de/competition/iv/#dataset2a.
 
 #### 5F dataset
-9 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has approximately 180 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found [here][kaya].
+9 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found [here][kaya].
 The following data files were used for the analysis:
 1. _5F-SubjectA-160408-5St-SGLHand-HFREQ.mat_
 2. _5F-SubjectB-160309-5St-SGLHand-HFREQ.mat_
@@ -24,7 +24,7 @@ The following data files were used for the analysis:
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 #### HaLT dataset
-12 subjects dataset of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. Each condition has approximately 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found at the same link as the 5F dataset (see above).
+12 subjects dataset of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. Each condition has 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found at the same link as the 5F dataset (see above).
 The following data files were used for the analysis:
 1. _HaLTSubjectA1602236StLRHandLegTongue.mat_
 2. _HaLTSubjectB1602186StLRHandLegTongue.mat_
@@ -33,7 +33,7 @@ The following data files were used for the analysis:
 5. _HaLTSubjectF1602026StLRHandLegTongue.mat_
 6. _HaLTSubjectG1603016StLRHandLegTongue.mat_
 7. _HaLTSubjectH1607206StLRHandLegTongue.mat_
-8. _HaLTSubjectI1606096StLRHandLegTongue.mat_
+8. _HaLTSubjectI1606286StLRHandLegTongue.mat_
 9. _HaLTSubjectJ1611216StLRHandLegTongue.mat_
 10. _HaLTSubjectK1610276StLRHandLegTongue.mat_
 11. _HaLTSubjectL1611166StLRHandLegTongue.mat_

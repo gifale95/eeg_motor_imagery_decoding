@@ -23,7 +23,6 @@ def load_bci_iv_2a(args):
 	from braindecode.datautil.preprocess import preprocess
 	from braindecode.datautil.windowers import create_windows_from_events
 
-
 ### Defining the preprocessor ###
 	preprocessors = [
 			# Keep only EEG sensors
@@ -34,7 +33,6 @@ def load_bci_iv_2a(args):
 			NumpyPreproc(fn=exponential_moving_standardize, factor_new=0.001,
 					init_block_size=1000, eps=0.0001)
 	]
-
 
 ### Validation data ###
 	# Loading the data
@@ -57,7 +55,6 @@ def load_bci_iv_2a(args):
 	# Extracting the validation data
 	sub_set = sub_set.split('session')
 	valid_set = sub_set['session_E']
-
 
 ### Training data ###
 	if args.inter_subject == True:
@@ -86,7 +83,6 @@ def load_bci_iv_2a(args):
 		# Extracting the training data
 		train_set = sub_set['session_T']
 
-
 ### Output ###
 	return valid_set, train_set
 
@@ -96,9 +92,7 @@ def load_5f_halt(args):
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Divide the data into training (2/3 of data) and validation (1/3 of data)
-	# partitions.
-# 2. Load all subjects for inter-subject anaylsis.
+# 1. Load all subjects for inter-subject anaylsis.
 	"""Loading, preprocessing and windowing the validation/traning data of the
 	5F or HaLT dataset.
 
@@ -124,7 +118,6 @@ def load_5f_halt(args):
 	from braindecode.datasets import BaseDataset, BaseConcatDataset
 	from braindecode.datautil.windowers import create_windows_from_events
 
-
 ### Subjects ###
 	if args.dataset == '5f':
 		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
@@ -134,7 +127,6 @@ def load_5f_halt(args):
 				'used_data')
 	files = os.listdir(data_dir)
 	files.sort()
-
 
 ### Channel types ###
 # Rejecting channels A1, A1, X5 (see paper)
@@ -147,7 +139,8 @@ def load_5f_halt(args):
 	unused_chans = np.asarray((10, 11, 21))
 	idx_chan[unused_chans] = False
 
-
+	train = []
+	val = []
 ### Loading and preprocessing the .mat data ###
 	for i, file in enumerate(files):
 		data = io.loadmat(os.path.join(data_dir, file),
@@ -159,54 +152,74 @@ def load_5f_halt(args):
 		data = np.append(data, marker, 0)
 		del marker
 
-
 ### Converting to MNE format ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
-		raw = mne.io.RawArray(data, info)
-		raw.info['highpass'] = 0.53
+		raw_train = mne.io.RawArray(data, info)
+		raw_train.info['highpass'] = 0.53
 		if args.dataset == '5f':
-			raw.info['lowpass'] = 100
+			raw_train.info['lowpass'] = 100
 		elif args.dataset == 'halt':
-			raw.info['lowpass'] = 70
+			raw_train.info['lowpass'] = 70
 		del data
 
-
-### Creating the raw data annotations ###
-		# Get events and drop stimuli channel
-		events = mne.find_events(raw, stim_channel='stim', output='onset',
+### Get events ###
+		events = mne.find_events(raw_train, stim_channel='stim', output='onset',
 				consecutive='increasing')
+		# Drop unused events
 		idx = np.ones(events.shape[0], dtype=bool)
 		for e in range(len(idx)):
 			if events[e,2] > 6:
 				idx[e] = False
 		events = events[idx]
-		raw.pick_types(eeg=True)
+		# Drop stimuli channel
+		raw_train.pick_types(eeg=True)
 
-		# Make annotations
+### Dividing events into training and validation ###
+		# The training data has 150 trials per condition, and the validation
+		# data has 50 trials per condition.
+		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
+				dtype=bool)
+		idx_val = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
+				dtype=bool)
+		for e in range(len(np.unique(events[:,2]))):
+			idx_train[np.where(events[:,2] == e+1)[0][0:100],e] = True
+			idx_val[np.where(events[:,2] == e+1)[0][100:150],e] = True
+		idx_train = np.sum(idx_train, 1, dtype=bool)
+		idx_val = np.sum(idx_val, 1, dtype=bool)
+		events_train = events[idx_train,:]
+		events_val = events[idx_val,:]
+
+### Creating the raw data annotations ###
 		if args.dataset == '5f':
 			event_desc = {1: 'thumb', 2: 'index_finger', 3: 'middle_finger',
 					4: 'ring_finger', 5: 'pinkie_finger'}
 		elif args.dataset == 'halt':
 			event_desc = {1: 'left_hand', 2: 'right_hand', 3: 'passive_neutral',
 					4: 'left_leg', 5: 'tongue', 6: 'right_leg'}
-		annotations = mne.annotations_from_events(events, sfreq,
+		annotations_train = mne.annotations_from_events(events_train, sfreq,
 				event_desc=event_desc)
-		annotations.duration = np.repeat(2.5, len(events)) # 2 seconds trials
-		raw.set_annotations(annotations)
-
+		annotations_val = mne.annotations_from_events(events_val, sfreq,
+				event_desc=event_desc)
+		# Creating 1.5s trials
+		annotations_train.duration = np.repeat(1.5, len(events_train))
+		annotations_val.duration = np.repeat(1.5, len(events_val))
+		# Adding annotations to raw data
+		raw_val = raw_train.copy()
+		raw_train.set_annotations(annotations_train)
+		raw_val.set_annotations(annotations_val)
 
 ### Converting to BaseConcatDataset format ###
-		description = {"subject": i+1}
-		dataset = BaseDataset(raw, description)
-		dataset = BaseConcatDataset([dataset])
-		del raw
-
+		description_train = {"subject": i+1, "session": 'session_T'}
+		description_val = {"subject": i+1, "session": 'session_E'}
+		dataset_train = BaseDataset(raw_train, description_train)
+		dataset_val = BaseDataset(raw_val, description_val)
+		dataset = BaseConcatDataset([dataset_train, dataset_val])
+		del raw_train, raw_val
 
 ### Windowing the data ###
 		# Windowing arguments
 		trial_start_offset_seconds = -0.5
 		trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)
-
 		# Create WindowsDatasets from mne.RawArrays
 		windows_dataset = create_windows_from_events(
 			dataset,
@@ -215,6 +228,13 @@ def load_5f_halt(args):
 			preload=True,
 		)
 
+### Dividing the windows into training and validation ###
+		train_set = windows_dataset.split('session')
+		valid_set = train_set['session_E']
+		train_set = train_set['session_T']
+		train.append(train_set.datasets[0].windows)
+		val.append(valid_set.datasets[0].windows)
 
 ### Output ###
-	#return valid_set, train_set
+	return valid_set, train_set
+
