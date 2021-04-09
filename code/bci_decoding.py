@@ -1,14 +1,12 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Use cropped trials.
+# 1. Make sure all datasets work with all models in cropped trials decoding.
 # 2. 5F dataset not decodable:
 	# Check for errors while importing!
-	# Keep sfreq at 1000Hz.
-	# Filter between 4Hz & 40Hz.
-	# Increase regularization strength.
 
-# 3. Model hyperparameter optimization (learning rate, weight decay).
+# 3. Model hyperparameter optimization (learning rate, weight decay,
+	# final_conv_length for cropped trials).
 # 4. EEG hyperparameter optimization (downsampling frequency, number of used
 	# channels, low- and high-frequency cuts).
 # 5. Use other models.
@@ -25,18 +23,16 @@ test_sub : int
 		Used test subject.
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
-model : str
-		Used neural network model ['ShallowFBCSPNet', 'Deep4Net'].
 cropped : bool
 		Whether to use cropped trials or not.
+model : str
+		Used neural network model ['ShallowFBCSPNet', 'Deep4Net'].
 n_epochs : int
 		Number of training epochs.
 lr : float
 		Learning rate ['0.0625 * 0.01', '0.0001'].
 wd : float
 		Weight decay ['0.5 * 0.001', '0'].
-trial_start_offset_seconds : float
-		Trial start offset in seconds.
 batch_size : int
 		Batch size for weight update.
 seed : int
@@ -61,7 +57,9 @@ from bci_decoding_utils import windowing_data
 from braindecode.util import set_random_seeds
 from braindecode.models.shallow_fbcsp import ShallowFBCSPNet
 from braindecode.models.deep4 import Deep4Net
+from braindecode.models.util import to_dense_prediction_model, get_output_shape
 from braindecode import EEGClassifier
+from braindecode.training.losses import CroppedLoss
 
 import torch
 from skorch.callbacks import LRScheduler
@@ -73,15 +71,14 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f')
-parser.add_argument('--test_sub', type=int, default=8)
+parser.add_argument('--dataset', type=str, default='bci_iv_2a')
+parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
-parser.add_argument('--model', type=str, default='Deep4Net')
 parser.add_argument('--cropped', type=bool, default=False)
+parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.0625 * 0.01)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
-parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.5)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
@@ -101,10 +98,16 @@ for key, val in vars(args).items():
 # =============================================================================
 if args.dataset == 'bci_iv_2a':
 	args.tot_sub = 9
+	args.trial_start_offset_seconds = -0.5
+	cropped_input_window_seconds = 4
 elif args.dataset == '5f':
 	args.tot_sub = 8
+	args.trial_start_offset_seconds = -0.5
+	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 elif args.dataset == 'halt':
 	args.tot_sub = 12
+	args.trial_start_offset_seconds = -0.5
+	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
@@ -134,74 +137,115 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 
 
 # =============================================================================
-# Loading, preprocessing and windowing the data
-# =============================================================================
-print('\n\n>>> Loading, preprocessing and windowing the data <<<\n\n')
 # Loading and preprocessing the data
+# =============================================================================
 if args.dataset == 'bci_iv_2a':
 	dataset = load_bci_iv_2a(args)
 else:
 	dataset = load_5f_halt(args)
 
-# Windowing and dividing into validation and training sets
-valid_set, train_set = windowing_data(dataset, args)
-del dataset
-
 # Getting EEG data info
-args.sfreq = valid_set.datasets[0].windows.info['sfreq']
-args.l_freq = valid_set.datasets[0].windows.info['highpass']
-args.h_freq = valid_set.datasets[0].windows.info['lowpass']
+args.n_classes = len(np.unique(dataset.datasets[0].raw.annotations.description))
+args.sfreq = dataset.datasets[0].raw.info['sfreq']
+args.l_freq = dataset.datasets[0].raw.info['highpass']
+args.h_freq = dataset.datasets[0].raw.info['lowpass']
 args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 		args.sfreq)
-args.in_chans = valid_set.datasets[0].windows.info['nchan']
-args.ch_names = valid_set.datasets[0].windows.info['ch_names']
-args.input_window_samples = valid_set[0][0].shape[1]
-args.n_classes = len(np.unique(valid_set.get_metadata()['target']))
+args.nchan = dataset.datasets[0].raw.info['nchan']
+args.ch_names = dataset.datasets[0].raw.info['ch_names']
+if args.cropped == True:
+	args.input_window_samples = int(cropped_input_window_seconds * args.sfreq)
+else:
+	args.input_window_samples = int(
+			dataset.datasets[0].raw.annotations.duration[0]
+			* args.sfreq + abs(args.trial_start_offset_samples))
 
 
 
-# =============================================================================
-# Construct model
 # =============================================================================
 # Defining the model
+# =============================================================================
+if args.cropped == True:
+	final_conv_length = 30
+else:
+	final_conv_length = 'auto'
+
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
-			in_chans=args.in_chans,
+			in_chans=args.nchan,
 			n_classes=args.n_classes,
 			input_window_samples=args.input_window_samples,
-			final_conv_length='auto'
+			final_conv_length=final_conv_length
 	)
 elif args.model == 'Deep4Net':
 	model = Deep4Net(
-			in_chans=args.in_chans,
+			in_chans=args.nchan,
 			n_classes=args.n_classes,
 			input_window_samples=args.input_window_samples,
-			final_conv_length='auto'
+			final_conv_length=final_conv_length
 	)
 
 # Send model to GPU
 if cuda:
-    model.cuda()
+	model.cuda()
+
+# Transform the model with strides to a model that outputs dense prediction, so
+# it can be used to obtain predictions for all crops
+if args.cropped == True:
+	to_dense_prediction_model(model)
+
+
+
+# =============================================================================
+# Windowing and dividing the data into validation and training sets
+# =============================================================================
+# To know the models’ receptive field, we calculate the shape of model output
+# for a dummy input.
+if args.cropped == True:
+	args.n_preds_per_input = get_output_shape(model, args.nchan,
+			args.input_window_samples)[2]
+
+valid_set, train_set = windowing_data(dataset, args)
+del dataset
 
 
 
 # =============================================================================
 # Training the model
 # =============================================================================
-clf = EEGClassifier(
+if args.cropped == True:
+	clf = EEGClassifier(
 		model,
-		criterion=torch.nn.NLLLoss,
+		cropped=True,
+		criterion=CroppedLoss,
+		criterion__loss_function=torch.nn.functional.nll_loss,
 		optimizer=torch.optim.AdamW,
-		train_split=predefined_split(valid_set), # using valid_set for validation
+		train_split=predefined_split(valid_set),
 		optimizer__lr=args.lr,
 		optimizer__weight_decay=args.wd,
+		iterator_train__shuffle=True,
 		batch_size=args.batch_size,
 		callbacks=[
 				"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
 				T_max=args.n_epochs - 1)),
 		],
 		device=args.device,
-)
+	)
+else:
+	clf = EEGClassifier(
+			model,
+			criterion=torch.nn.NLLLoss,
+			optimizer=torch.optim.AdamW,
+			train_split=predefined_split(valid_set),
+			optimizer__lr=args.lr,
+			optimizer__weight_decay=args.wd,
+			batch_size=args.batch_size,
+			callbacks=[
+					"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
+					T_max=args.n_epochs - 1)),
+			],
+			device=args.device,
+	)
 
 # Model training for a specified number of epochs. "y" is None as it is already
 # supplied in the dataset.

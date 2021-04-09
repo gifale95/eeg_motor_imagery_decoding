@@ -48,18 +48,13 @@ The decoding analysis is performed using shallow and deep CNN architectures, as 
 
 
 
-## Inter-subject learning
-
-
-
 ## Cropped trials
+This is analogous to a data augmentation technique: instead of full trials, the CNN is fed with crops (across time) of the original trials. This procedure results in more training data, and has been shown to increase decoding accuracy. More information about cropped trials decoding in [Schirrmeister et al., 2018][schirrmeister], and a tutorial for the Python implementation of the method can be found on the [Braindecode][cropped_tutorial] website.
+
+[cropped_tutorial]: https://braindecode.org/auto_examples/plot_bcic_iv_2a_moabb_cropped.html
 
 
 
-
-
-
-
-
-
+## Inter-subject learning
+The inter-subject learning approach aims at understanding how well a CNN trained on decoding the motor imagery trials of a set of subjects is capable of generalizing its decoding performance on a held-out subject. In other words, this is testing the possibility of pre-trained EEG BCI devices which readily work on novel subjects without the need of additional training data.
 
