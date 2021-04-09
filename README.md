@@ -10,16 +10,12 @@ This repository provides Python code for the decoding of different motor imagery
 Motor imagery dataset (Brunner et al., 2008) of 9 subjects with 4 motor imagery coditions: left hand, right hand, both feet, tongue. Each condition has 144 four-second trials, recorded using 22 EEG channels. Data and the accompanying paper can be found at http://bbci.de/competition/iv/#dataset2a.
 
 #### 5F dataset
-9 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found [here][kaya].
+4 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found [here][kaya].
 The following data files were used for the analysis:
-1. _5F-SubjectA-160408-5St-SGLHand-HFREQ.mat_
-2. _5F-SubjectB-160309-5St-SGLHand-HFREQ.mat_
-3. _5F-SubjectC-160429-5St-SGLHand-HFREQ.mat_
-4. _5F-SubjectE-160321-5St-SGLHand-HFREQ.mat_
-5. _5F-SubjectF-160210-5St-SGLHand-HFREQ.mat_
-6. _5F-SubjectG-160413-5St-SGLHand-HFREQ.mat_
-7. _5F-SubjectH-160804-5St-SGLHand-HFREQ.mat_
-8. _5F-SubjectI-160719-5St-SGLHand-HFREQ.mat_
+1. _5F-SubjectA-160405-5St-SGLHand.mat_
+2. _5F-SubjectB-160316-5St-SGLHand.mat_
+3. _5F-SubjectC-151204-5St-SGLHand.mat_
+4. _5F-SubjectF-151027-5St-SGLHand.mat_
 
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 

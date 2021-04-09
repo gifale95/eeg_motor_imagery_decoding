@@ -35,6 +35,8 @@ def load_bci_iv_2a(args):
 			MNEPreproc(fn='pick_types', eeg=True, meg=False, stim=False),
 			# Convert from volt to microvolt, directly modifying the numpy array
 			NumpyPreproc(fn=lambda x: x * 1e6),
+			# bandpass filter
+			MNEPreproc(fn='filter', l_freq=0.53, h_freq=70),
 			# Exponential moving standardization
 			NumpyPreproc(fn=exponential_moving_standardize, factor_new=0.001,
 					init_block_size=1000, eps=0.0001)
@@ -110,11 +112,7 @@ def load_5f_halt(args):
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
 		raw_train.info['highpass'] = 0.53
-		if args.dataset == '5f':
-			raw_train.info['lowpass'] = 100
-			raw_train.resample(250) # resampling 5F data to 250Hz
-		elif args.dataset == 'halt':
-			raw_train.info['lowpass'] = 70
+		raw_train.info['lowpass'] = 70
 		del data
 
 		### Get events ###

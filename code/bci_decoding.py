@@ -1,10 +1,10 @@
 # =============================================================================
 # TO DO
 # =============================================================================
+# 0. Make sure that all subjects of all datasets are lerneable.
 # 1. Make sure all datasets work with all models in cropped trials decoding.
-# 2. 5F dataset not decodable:
-	# Check for errors while importing!
 
+# 2. Dataset from (Jeong et al., 2020).
 # 3. Model hyperparameter optimization (learning rate, weight decay,
 	# final_conv_length for cropped trials).
 # 4. EEG hyperparameter optimization (downsampling frequency, number of used
@@ -71,11 +71,11 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='bci_iv_2a')
+parser.add_argument('--dataset', type=str, default='5f')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=False)
-parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
+parser.add_argument('--model', type=str, default='Deep4Net')
 parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.0625 * 0.01)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
