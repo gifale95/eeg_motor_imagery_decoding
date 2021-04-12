@@ -48,7 +48,6 @@ def load_bci_iv_2a(args):
 	return dataset
 
 
-
 def load_5f_halt(args):
 	"""Loading and preprocessing the validation/traning data of the 5F or HaLT
 	datasets.
@@ -172,7 +171,6 @@ def load_5f_halt(args):
 
 	### Output ###
 	return dataset
-
 
 
 def windowing_data(dataset, args):

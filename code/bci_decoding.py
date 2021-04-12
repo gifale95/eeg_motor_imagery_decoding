@@ -1,15 +1,19 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 0. Make sure that all subjects of all datasets are lerneable.
-# 1. Make sure all datasets work with all models in cropped trials decoding.
+# 1. Error while using cropped trials with Deep4Net (bci_iv_2a) and with
+	# Deep4Net or ShallowFBCSPNet (halt & 5f).
+	# Change the "cropped_input_window_seconds" and "final_conv_length" params.
+# 2. Reduce epoch time of HaLT and 5F datasets to 1s (best epoching window
+	# seems to be [0ms 850ms]).
 
-# 2. Dataset from (Jeong et al., 2020).
-# 3. Model hyperparameter optimization (learning rate, weight decay,
+# 3. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 4. Model hyperparameter optimization (learning rate, weight decay,
 	# final_conv_length for cropped trials).
-# 4. EEG hyperparameter optimization (downsampling frequency, number of used
-	# channels, low- and high-frequency cuts).
-# 5. Use other models.
+# 5. EEG hyperparameter optimization (downsampling frequency, number of used
+	# channels, low- and high-frequency cuts, epoch size).
+# 6. Why HFREQ data of F5 not working? Find out to have 8 subjects instead of 4.
+# 7. Use other deep learning models.
 
 
 
@@ -66,18 +70,17 @@ from skorch.callbacks import LRScheduler
 from skorch.helper import predefined_split
 
 
-
 # =============================================================================
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f')
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--inter_subject', type=bool, default=False)
-parser.add_argument('--cropped', type=bool, default=False)
+parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--cropped', type=bool, default=True)
 parser.add_argument('--model', type=str, default='Deep4Net')
 parser.add_argument('--n_epochs', type=int, default=50)
-parser.add_argument('--lr', type=float, default=0.0625 * 0.01)
+parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
@@ -92,7 +95,6 @@ for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
 
 
-
 # =============================================================================
 # Dataset-specific parameters
 # =============================================================================
@@ -101,7 +103,7 @@ if args.dataset == 'bci_iv_2a':
 	args.trial_start_offset_seconds = -0.5
 	cropped_input_window_seconds = 4
 elif args.dataset == '5f':
-	args.tot_sub = 8
+	args.tot_sub = 4
 	args.trial_start_offset_seconds = -0.5
 	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 elif args.dataset == 'halt':
@@ -110,9 +112,9 @@ elif args.dataset == 'halt':
 	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-
 # =============================================================================
-# !!! Model-specific parameters (remove during hyperparameter optimization)
+# CNN training hyperparameters (as used in Schirrmeister et al., 2018)
+# !!! Remove during hyperparameter optimization
 # =============================================================================
 # These values were found to be good for shallow and deep network.
 if args.model == 'ShallowFBCSPNet':
@@ -121,7 +123,6 @@ if args.model == 'ShallowFBCSPNet':
 elif args.model == 'Deep4Net':
 	args.lr = 1 * 0.01
 	args.wd = 0.5 * 0.001
-
 
 
 # =============================================================================
@@ -133,7 +134,6 @@ args.device = 'cuda' if cuda else 'cpu'
 if cuda:
 	torch.backends.cudnn.benchmark = True
 set_random_seeds(seed=args.seed, cuda=cuda)
-
 
 
 # =============================================================================
@@ -161,12 +161,11 @@ else:
 			* args.sfreq + abs(args.trial_start_offset_samples))
 
 
-
 # =============================================================================
 # Defining the model
 # =============================================================================
 if args.cropped == True:
-	final_conv_length = 30
+	final_conv_length = 30 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 else:
 	final_conv_length = 'auto'
 
@@ -195,7 +194,6 @@ if args.cropped == True:
 	to_dense_prediction_model(model)
 
 
-
 # =============================================================================
 # Windowing and dividing the data into validation and training sets
 # =============================================================================
@@ -207,7 +205,6 @@ if args.cropped == True:
 
 valid_set, train_set = windowing_data(dataset, args)
 del dataset
-
 
 
 # =============================================================================
@@ -252,7 +249,6 @@ else:
 clf.fit(train_set, y=None, epochs=args.n_epochs)
 
 
-
 # =============================================================================
 # Storing the results into a dictionary
 # =============================================================================
@@ -262,7 +258,6 @@ results = {
 		"y_pred": clf.predict(valid_set),
 		"args": args
 }
-
 
 
 # =============================================================================
