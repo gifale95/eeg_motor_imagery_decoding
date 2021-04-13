@@ -152,9 +152,9 @@ def load_5f_halt(args):
 				event_desc=event_desc)
 		annotations_val = mne.annotations_from_events(events_val, sfreq,
 				event_desc=event_desc)
-		# Creating 2s trials
-		annotations_train.duration = np.repeat(2., len(events_train))
-		annotations_val.duration = np.repeat(2., len(events_val))
+		# Creating 1s trials
+		annotations_train.duration = np.repeat(1., len(events_train))
+		annotations_val.duration = np.repeat(1., len(events_val))
 		# Adding annotations to raw data
 		raw_val = raw_train.copy()
 		raw_train.set_annotations(annotations_train)

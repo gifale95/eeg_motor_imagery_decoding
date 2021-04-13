@@ -1,18 +1,16 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Error while using cropped trials with Deep4Net (bci_iv_2a) and with
-	# Deep4Net or ShallowFBCSPNet (halt & 5f).
-	# Change the "cropped_input_window_seconds" and "final_conv_length" params.
-# 2. Reduce epoch time of HaLT and 5F datasets to 1s (best epoching window
-	# seems to be [0ms 850ms]).
+# 1. Error while using Deep4Net on halt & 5f: the trials are not long enough.
+	# Figure out what determines the crop stride, window stride, and min
+	# input samples for Deep4Net.
 
-# 3. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 4. Model hyperparameter optimization (learning rate, weight decay,
-	# final_conv_length for cropped trials).
-# 5. EEG hyperparameter optimization (downsampling frequency, number of used
-	# channels, low- and high-frequency cuts, epoch size).
-# 6. Why HFREQ data of F5 not working? Find out to have 8 subjects instead of 4.
+# 2. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 3. Model hyperparameter optimization (learning rate, weight decay).
+# 4. EEG hyperparameter optimization (window_size, downsampling frequency,
+	# number of used channels, low- and high-frequency cuts).
+# 5. Why HFREQ data of F5 not working? Find out to have 8 subjects instead of 4.
+# 6. Data augmentation techniques.
 # 7. Use other deep learning models.
 
 
@@ -76,9 +74,9 @@ from skorch.helper import predefined_split
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f')
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=True)
-parser.add_argument('--model', type=str, default='Deep4Net')
+parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=0.5 * 0.001)
@@ -101,15 +99,12 @@ for key, val in vars(args).items():
 if args.dataset == 'bci_iv_2a':
 	args.tot_sub = 9
 	args.trial_start_offset_seconds = -0.5
-	cropped_input_window_seconds = 4
 elif args.dataset == '5f':
 	args.tot_sub = 4
-	args.trial_start_offset_seconds = -0.5
-	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	args.trial_start_offset_seconds = -0.25
 elif args.dataset == 'halt':
 	args.tot_sub = 12
-	args.trial_start_offset_seconds = -0.5
-	cropped_input_window_seconds = 2 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	args.trial_start_offset_seconds = -0.25
 
 
 # =============================================================================
@@ -153,8 +148,14 @@ args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 		args.sfreq)
 args.nchan = dataset.datasets[0].raw.info['nchan']
 args.ch_names = dataset.datasets[0].raw.info['ch_names']
+
+# When using full trials, the window size is given by the total trial length
+# plus its start offset.
+# When using cropped trials, the window size is kept at the total trial length
+# (without start offset) for computational efficiency.
 if args.cropped == True:
-	args.input_window_samples = int(cropped_input_window_seconds * args.sfreq)
+	args.input_window_samples = int(
+			dataset.datasets[0].raw.annotations.duration[0] * args.sfreq)
 else:
 	args.input_window_samples = int(
 			dataset.datasets[0].raw.annotations.duration[0]
@@ -164,10 +165,40 @@ else:
 # =============================================================================
 # Defining the model
 # =============================================================================
+# This parameter changes the window strides when using cropped trials # !!!!!!!!!!!!!
 if args.cropped == True:
-	final_conv_length = 30 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	final_conv_length = 1
 else:
 	final_conv_length = 'auto'
+
+# if args.cropped == True:
+	# if args.dataset == 'bci_iv_2a':
+		# if args.model == 'ShallowFBCSPNet':
+			# final_conv_length = 30 # !!! Different
+		# elif args.model == 'Deep4Net':
+			# final_conv_length = 'auto'
+
+	# else: # h5/halt
+		# if args.model == 'ShallowFBCSPNet':
+			# final_conv_length = 1 # !!! Different
+		# elif args.model == 'Deep4Net':
+			# final_conv_length = ?????????????????????????
+
+# elif args.cropped == False:
+	# if args.dataset == 'bci_iv_2a':
+		# if args.model == 'ShallowFBCSPNet':
+			# final_conv_length = 'auto'
+		# elif args.model == 'Deep4Net':
+			# final_conv_length = 'auto'
+
+	# else: # h5/halt
+		# if args.model == 'ShallowFBCSPNet':
+			# final_conv_length = 'auto'
+		# elif args.model == 'Deep4Net':
+			# final_conv_length = ?????????????????????????
+
+
+
 
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
@@ -198,7 +229,7 @@ if args.cropped == True:
 # Windowing and dividing the data into validation and training sets
 # =============================================================================
 # To know the models’ receptive field, we calculate the shape of model output
-# for a dummy input.
+# for a dummy input. The model's receptive field size defines the crop size.
 if args.cropped == True:
 	args.n_preds_per_input = get_output_shape(model, args.nchan,
 			args.input_window_samples)[2]
