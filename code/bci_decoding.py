@@ -2,14 +2,13 @@
 # TO DO
 # =============================================================================
 # 1. Error while using Deep4Net on halt & 5f: the trials are not long enough.
-	# Figure out what determines the crop stride, window stride, and min
-	# input samples for Deep4Net.
+	# How is the data manipulated in the different layers of Deep4Net?
+# 2. Model hyperparameter optimization (learning rate, weight decay).
 
-# 2. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 3. Model hyperparameter optimization (learning rate, weight decay).
-# 4. EEG hyperparameter optimization (window_size, downsampling frequency,
+# 3. EEG hyperparameter optimization (window_size, downsampling frequency,
 	# number of used channels, low- and high-frequency cuts).
-# 5. Why HFREQ data of F5 not working? Find out to have 8 subjects instead of 4.
+# 4. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
+# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
 # 6. Data augmentation techniques.
 # 7. Use other deep learning models.
 
@@ -72,7 +71,7 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f')
+parser.add_argument('--dataset', type=str, default='bci_iv_2a')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=True)
@@ -99,25 +98,13 @@ for key, val in vars(args).items():
 if args.dataset == 'bci_iv_2a':
 	args.tot_sub = 9
 	args.trial_start_offset_seconds = -0.5
+	args.trial_stop_offset_seconds = 0
 elif args.dataset == '5f':
 	args.tot_sub = 4
 	args.trial_start_offset_seconds = -0.25
 elif args.dataset == 'halt':
 	args.tot_sub = 12
 	args.trial_start_offset_seconds = -0.25
-
-
-# =============================================================================
-# CNN training hyperparameters (as used in Schirrmeister et al., 2018)
-# !!! Remove during hyperparameter optimization
-# =============================================================================
-# These values were found to be good for shallow and deep network.
-if args.model == 'ShallowFBCSPNet':
-	args.lr = 0.0625 * 0.01
-	args.wd = 0
-elif args.model == 'Deep4Net':
-	args.lr = 1 * 0.01
-	args.wd = 0.5 * 0.001
 
 
 # =============================================================================
@@ -165,40 +152,14 @@ else:
 # =============================================================================
 # Defining the model
 # =============================================================================
-# This parameter changes the window strides when using cropped trials # !!!!!!!!!!!!!
-if args.cropped == True:
-	final_conv_length = 1
-else:
+# Now we create the model. To enable it to be used in cropped decoding
+# efficiently, we manually set the length of the final convolution layer to
+# some length that makes the receptive field of the ConvNet smaller than
+# "input_window_samples" (e.g., "final_conv_length=30").
+if args.cropped == False:
 	final_conv_length = 'auto'
-
-# if args.cropped == True:
-	# if args.dataset == 'bci_iv_2a':
-		# if args.model == 'ShallowFBCSPNet':
-			# final_conv_length = 30 # !!! Different
-		# elif args.model == 'Deep4Net':
-			# final_conv_length = 'auto'
-
-	# else: # h5/halt
-		# if args.model == 'ShallowFBCSPNet':
-			# final_conv_length = 1 # !!! Different
-		# elif args.model == 'Deep4Net':
-			# final_conv_length = ?????????????????????????
-
-# elif args.cropped == False:
-	# if args.dataset == 'bci_iv_2a':
-		# if args.model == 'ShallowFBCSPNet':
-			# final_conv_length = 'auto'
-		# elif args.model == 'Deep4Net':
-			# final_conv_length = 'auto'
-
-	# else: # h5/halt
-		# if args.model == 'ShallowFBCSPNet':
-			# final_conv_length = 'auto'
-		# elif args.model == 'Deep4Net':
-			# final_conv_length = ?????????????????????????
-
-
-
+else:
+	final_conv_length = 1
 
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
