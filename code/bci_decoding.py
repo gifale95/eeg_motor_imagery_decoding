@@ -1,16 +1,24 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Error while using Deep4Net on halt & 5f: the trials are not long enough.
-	# How is the data manipulated in the different layers of Deep4Net?
-# 2. Model hyperparameter optimization (learning rate, weight decay).
+# 1. Change Deep4Net parameters so that it works with 5f/halt data.
 
-# 3. EEG hyperparameter optimization (window_size, downsampling frequency,
+# 2. Training:
+	# - Gridsearch over weight decay, learning rate, batch size.
+		# Learning rate: [0.0001 10, 0.05]
+		# Weight decay: [0.0001 0.1]
+		# Batch size: [16, 32, 64, 128]
+	# - Save (only) the learning plot for each model training, with parameters
+		# on file name.
+
+# 3. Model hyperparameter optimization (learning rate, weight decay, batch
+	# size, kernel sizes, Adam's parameters, dropout).
+# 4. EEG hyperparameter optimization (window_size, downsampling frequency,
 	# number of used channels, low- and high-frequency cuts).
-# 4. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
-# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 6. Data augmentation techniques.
-# 7. Use other deep learning models.
+# 5. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
+# 6. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 7. Data augmentation techniques (also beneficial for regularization).
+# 8. Use other deep learning models.
 
 
 
@@ -22,6 +30,8 @@ dataset : str
 		Used dataset ['bci_iv_2a', 'halt', '5f'].
 test_sub : int
 		Used test subject.
+test_set : str
+		Used data for testing ['validation', 'test'].
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
 cropped : bool
@@ -31,9 +41,9 @@ model : str
 n_epochs : int
 		Number of training epochs.
 lr : float
-		Learning rate ['0.0625 * 0.01', '0.0001'].
+		Learning rate.
 wd : float
-		Weight decay ['0.5 * 0.001', '0'].
+		Weight decay coefficient.
 batch_size : int
 		Batch size for weight update.
 seed : int
@@ -73,13 +83,14 @@ from skorch.helper import predefined_split
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='bci_iv_2a')
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--inter_subject', type=bool, default=False)
-parser.add_argument('--cropped', type=bool, default=True)
+parser.add_argument('--test_set', type=str, default='validation')
+parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--cropped', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=0.5 * 0.001)
-parser.add_argument('--batch_size', type=int, default=64)
+parser.add_argument('--wd', type=float, default=0.005)
+parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
 		'studies/dnn_bci', type=str)
@@ -98,7 +109,6 @@ for key, val in vars(args).items():
 if args.dataset == 'bci_iv_2a':
 	args.tot_sub = 9
 	args.trial_start_offset_seconds = -0.5
-	args.trial_stop_offset_seconds = 0
 elif args.dataset == '5f':
 	args.tot_sub = 4
 	args.trial_start_offset_seconds = -0.25
@@ -121,6 +131,11 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading and preprocessing the data
 # =============================================================================
+# For intra-subject decoding 4/6 of the data of the subject of interest is used
+# for training, 1/6 for validation and 1/6 for testing.
+# For inter-subject decoding 1/2 of the data of the subject of interest is used
+# for validation and 1/2 for testing. All the data from the other subjects is
+# used for training.
 if args.dataset == 'bci_iv_2a':
 	dataset = load_bci_iv_2a(args)
 else:
@@ -244,12 +259,12 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 # =============================================================================
 # Storing the results into a dictionary
 # =============================================================================
-results = {
-		"history": clf.history,
-		"y_true": np.asarray(valid_set.get_metadata()["target"]),
-		"y_pred": clf.predict(valid_set),
-		"args": args
-}
+#results = {
+		#"history": clf.history,
+		#"y_true": np.asarray(valid_set.get_metadata()["target"]),
+		#"y_pred": clf.predict(valid_set),
+		#"args": args
+#}
 
 
 # =============================================================================
@@ -268,3 +283,46 @@ file_name = 'epochs-'+format(args.n_epochs, '03')+'_lr-'+str(args.lr)+'_wd-'+\
 # 	os.makedirs(os.path.join(args.project_dir, save_dir))
 # np.save(os.path.join(args.project_dir, save_dir, file_name), results)
 
+
+# =============================================================================
+# Plotting the training statistics
+# =============================================================================
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import pandas as pd
+# Extract loss and accuracy values for plotting from history object
+results_columns = ['train_loss', 'valid_loss', 'train_accuracy',
+		'valid_accuracy']
+df = pd.DataFrame(clf.history[:, results_columns], columns=results_columns,
+		index=clf.history[:, 'epoch'])
+
+# Get percent of misclass for better visual comparison to loss
+df = df.assign(train_misclass=100 - 100 * df.train_accuracy,
+		valid_misclass=100 - 100 * df.valid_accuracy)
+
+plt.style.use('seaborn')
+fig, ax1 = plt.subplots(figsize=(8, 3))
+df.loc[:, ['train_loss', 'valid_loss']].plot(
+		ax=ax1, style=['-', ':'], marker='o', color='tab:blue', legend=False,
+		fontsize=14)
+
+ax1.tick_params(axis='y', labelcolor='tab:blue', labelsize=14)
+ax1.set_ylabel("Loss", color='tab:blue', fontsize=14)
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+df.loc[:, ['train_misclass', 'valid_misclass']].plot(
+		ax=ax2, style=['-', ':'], marker='o', color='tab:red', legend=False)
+ax2.tick_params(axis='y', labelcolor='tab:red', labelsize=14)
+ax2.set_ylabel("Misclassification Rate [%]", color='tab:red', fontsize=14)
+ax2.set_ylim(ax2.get_ylim()[0], 85) # make some room for legend
+ax1.set_xlabel("Epoch", fontsize=14)
+
+# Where some data has already been plotted to ax
+handles = []
+handles.append(Line2D([0], [0], color='black', linewidth=1, linestyle='-',
+		label='Train'))
+handles.append(Line2D([0], [0], color='black', linewidth=1, linestyle=':',
+		label='Valid'))
+plt.legend(handles, [h.get_label() for h in handles], fontsize=14)
+plt.tight_layout()

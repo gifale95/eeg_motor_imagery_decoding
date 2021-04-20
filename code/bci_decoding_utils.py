@@ -44,6 +44,23 @@ def load_bci_iv_2a(args):
 	# Preprocessing
 	preprocess(dataset, preprocessors)
 
+	### Dividing events into training and validation ###
+	# For intra-subject decoding 4/6 of the data of the subject of interest
+	# is used for training, 1/6 for validation and 1/6 for testing.
+	# For inter-subject decoding 1/2 of the data of the subject of interest
+	# is used for validation and 1/2 for testing. All the data from the
+	# other subjects is used for training.
+	if args.inter_subject == False:
+		dataset.description.loc[:8,'session'] = 'training'
+		dataset.description.loc[8:10,'session'] = 'validation'
+		dataset.description.loc[10:12,'session'] = 'test'
+	else:
+		dataset.description.loc[:,'session'] = 'training'
+		idx_test_sub = dataset.description.loc[:, 'subject'] == args.test_sub
+		dataset.description.loc[idx_test_sub,'session'] = 'validation'
+		idx_test = np.where(idx_test_sub == True)[0][6:12]
+		dataset.description.loc[idx_test,'session'] = 'test'
+
 	### Output ###
 	return dataset
 
@@ -127,19 +144,34 @@ def load_5f_halt(args):
 		raw_train.pick_types(eeg=True)
 
 		### Dividing events into training and validation ###
-		# The training data has 150 trials per condition, and the validation
-		# data has 50 trials per condition.
+		# For intra-subject decoding 4/6 of the data of the subject of interest
+		# is used for training, 1/6 for validation and 1/6 for testing.
+		# For inter-subject decoding 1/2 of the data of the subject of interest
+		# is used for validation and 1/2 for testing. All the data from the
+		# other subjects is used for training.
 		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
 				dtype=bool)
 		idx_val = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
 				dtype=bool)
+		idx_test = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
+				dtype=bool)
 		for e in range(len(np.unique(events[:,2]))):
-			idx_train[np.where(events[:,2] == e+1)[0][0:100],e] = True
-			idx_val[np.where(events[:,2] == e+1)[0][100:150],e] = True
+			if args.inter_subject == False:
+				idx_train[np.where(events[:,2] == e+1)[0][0:100],e] = True
+				idx_val[np.where(events[:,2] == e+1)[0][100:125],e] = True
+				idx_test[np.where(events[:,2] == e+1)[0][125:150],e] = True
+			else:
+				if args.test_sub == i+1:
+					idx_val[np.where(events[:,2] == e+1)[0][0:75],e] = True
+					idx_test[np.where(events[:,2] == e+1)[0][75:150],e] = True
+				else:
+					idx_train[np.where(events[:,2] == e+1)[0][0:150],e] = True
 		idx_train = np.sum(idx_train, 1, dtype=bool)
 		idx_val = np.sum(idx_val, 1, dtype=bool)
+		idx_test = np.sum(idx_test, 1, dtype=bool)
 		events_train = events[idx_train,:]
 		events_val = events[idx_val,:]
+		events_test = events[idx_test,:]
 
 		### Creating the raw data annotations ###
 		if args.dataset == '5f':
@@ -148,25 +180,61 @@ def load_5f_halt(args):
 		elif args.dataset == 'halt':
 			event_desc = {1: 'left_hand', 2: 'right_hand', 3: 'passive_neutral',
 					4: 'left_leg', 5: 'tongue', 6: 'right_leg'}
-		annotations_train = mne.annotations_from_events(events_train, sfreq,
-				event_desc=event_desc)
-		annotations_val = mne.annotations_from_events(events_val, sfreq,
-				event_desc=event_desc)
-		# Creating 1s trials
-		annotations_train.duration = np.repeat(1., len(events_train))
-		annotations_val.duration = np.repeat(1., len(events_val))
-		# Adding annotations to raw data
-		raw_val = raw_train.copy()
-		raw_train.set_annotations(annotations_train)
-		raw_val.set_annotations(annotations_val)
+		if args.inter_subject == False:
+			annotations_train = mne.annotations_from_events(events_train, sfreq,
+					event_desc=event_desc)
+			annotations_val = mne.annotations_from_events(events_val, sfreq,
+					event_desc=event_desc)
+			annotations_test = mne.annotations_from_events(events_test, sfreq,
+					event_desc=event_desc)
+			# Creating 1s trials
+			annotations_train.duration = np.repeat(1., len(events_train))
+			annotations_val.duration = np.repeat(1., len(events_val))
+			annotations_test.duration = np.repeat(1., len(events_test))
+			# Adding annotations to raw data
+			raw_val = raw_train.copy()
+			raw_test = raw_train.copy()
+			raw_train.set_annotations(annotations_train)
+			raw_val.set_annotations(annotations_val)
+			raw_test.set_annotations(annotations_test)
+		else:
+			if args.test_sub == i+1:
+				annotations_val = mne.annotations_from_events(events_val, sfreq,
+						event_desc=event_desc)
+				annotations_test = mne.annotations_from_events(events_test,
+						sfreq, event_desc=event_desc)
+				# Creating 1s trials
+				annotations_val.duration = np.repeat(1., len(events_val))
+				annotations_test.duration = np.repeat(1., len(events_test))
+				# Adding annotations to raw data
+				raw_val = raw_train.copy()
+				raw_test = raw_train.copy()
+				raw_val.set_annotations(annotations_val)
+				raw_test.set_annotations(annotations_test)
+			else:
+				annotations_train = mne.annotations_from_events(events_train,
+						sfreq, event_desc=event_desc)
+				# Creating 1s trials
+				annotations_train.duration = np.repeat(1., len(events_train))
+				# Adding annotations to raw data
+				raw_train.set_annotations(annotations_train)
 
 		### Converting to BaseConcatDataset format ###
 		if args.inter_subject == False:
 			i = args.test_sub-1
-		description_train = {"subject": i+1, "session": 'session_T'}
-		description_val = {"subject": i+1, "session": 'session_E'}
-		dataset.append(BaseDataset(raw_train, description_train))
-		dataset.append(BaseDataset(raw_val, description_val))
+		description_train = {"subject": i+1, "session": 'training'}
+		description_val = {"subject": i+1, "session": 'validation'}
+		description_test = {"subject": i+1, "session": 'test'}
+		if args.inter_subject == False:
+			dataset.append(BaseDataset(raw_train, description_train))
+			dataset.append(BaseDataset(raw_val, description_val))
+			dataset.append(BaseDataset(raw_test, description_test))
+		else:
+			if args.test_sub == i+1:
+				dataset.append(BaseDataset(raw_val, description_val))
+				dataset.append(BaseDataset(raw_test, description_test))
+			else:
+				dataset.append(BaseDataset(raw_train, description_train))
 	dataset = BaseConcatDataset(dataset)
 
 	### Output ###
@@ -194,7 +262,6 @@ def windowing_data(dataset, args):
 	"""
 
 	from braindecode.datautil.windowers import create_windows_from_events
-	from braindecode.datasets import BaseConcatDataset
 
 	### Windowing the data ###
 	# Extract sampling frequency, check that they are same in all datasets
@@ -220,22 +287,13 @@ def windowing_data(dataset, args):
 		)
 	del dataset
 
-	### Dividing training and validation data ###
+	### Dividing training, validation and test data ###
 	windows_dataset = windows_dataset.split('session')
-	valid_set = windows_dataset['session_E']
-	train_set = windows_dataset['session_T']
-	del windows_dataset
-
-	### Selecting the right train/validation data for inter-subject analysis ###
-	if args.inter_subject == True:
-		valid_set = valid_set.split('subject')
-		valid_set = valid_set[str(args.test_sub)]
-		train_list = []
-		train_set = train_set.split('subject')
-		for s in range(args.tot_sub):
-			if s+1 != args.test_sub:
-				train_list.append(train_set[str(s+1)])
-		train_set = BaseConcatDataset(train_list)
+	train_set = windows_dataset['training']
+	if args.test_set == 'validation':
+		valid_set = windows_dataset['validation']
+	else:
+		valid_set = windows_dataset['test']
 
 	### Output ###
 	return valid_set, train_set
