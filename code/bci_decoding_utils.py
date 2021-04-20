@@ -44,23 +44,6 @@ def load_bci_iv_2a(args):
 	# Preprocessing
 	preprocess(dataset, preprocessors)
 
-	### Dividing events into training and validation ###
-	# For intra-subject decoding 4/6 of the data of the subject of interest
-	# is used for training, 1/6 for validation and 1/6 for testing.
-	# For inter-subject decoding 1/2 of the data of the subject of interest
-	# is used for validation and 1/2 for testing. All the data from the
-	# other subjects is used for training.
-	if args.inter_subject == False:
-		dataset.description.loc[:8,'session'] = 'training'
-		dataset.description.loc[8:10,'session'] = 'validation'
-		dataset.description.loc[10:12,'session'] = 'test'
-	else:
-		dataset.description.loc[:,'session'] = 'training'
-		idx_test_sub = dataset.description.loc[:, 'subject'] == args.test_sub
-		dataset.description.loc[idx_test_sub,'session'] = 'validation'
-		idx_test = np.where(idx_test_sub == True)[0][6:12]
-		dataset.description.loc[idx_test,'session'] = 'test'
-
 	### Output ###
 	return dataset
 
@@ -143,7 +126,7 @@ def load_5f_halt(args):
 		# Drop stimuli channel
 		raw_train.pick_types(eeg=True)
 
-		### Dividing events into training and validation ###
+		### Dividing events into training, validation and test ###
 		# For intra-subject decoding 4/6 of the data of the subject of interest
 		# is used for training, 1/6 for validation and 1/6 for testing.
 		# For inter-subject decoding 1/2 of the data of the subject of interest
@@ -262,6 +245,7 @@ def windowing_data(dataset, args):
 	"""
 
 	from braindecode.datautil.windowers import create_windows_from_events
+	import numpy as np
 
 	### Windowing the data ###
 	# Extract sampling frequency, check that they are same in all datasets
@@ -286,6 +270,26 @@ def windowing_data(dataset, args):
 			preload=True,
 		)
 	del dataset
+
+	### Dividing bci_iv_2a data into training, validation and test ###
+	# For intra-subject decoding 4/6 of the data of the subject of interest
+	# is used for training, 1/6 for validation and 1/6 for testing.
+	# For inter-subject decoding 1/2 of the data of the subject of interest
+	# is used for validation and 1/2 for testing. All the data from the
+	# other subjects is used for training.
+	if args.dataset == 'bci_iv_2a':
+		if args.inter_subject == False:
+			windows_dataset.description.loc[:8,'session'] = 'training'
+			windows_dataset.description.loc[8:10,'session'] = 'validation'
+			windows_dataset.description.loc[10:12,'session'] = 'test'
+		else:
+			windows_dataset.description.loc[:,'session'] = 'training'
+			idx_test_sub = windows_dataset.description.loc[:, 'subject'] ==\
+					args.test_sub
+			windows_dataset.description.loc[idx_test_sub,'session'] =\
+					'validation'
+			idx_test = np.where(idx_test_sub == True)[0][6:12]
+			windows_dataset.description.loc[idx_test,'session'] = 'test'
 
 	### Dividing training, validation and test data ###
 	windows_dataset = windows_dataset.split('session')
