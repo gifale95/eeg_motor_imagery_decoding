@@ -1,24 +1,16 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Change Deep4Net parameters so that it works with 5f/halt data.
+# 1. Change Deep4Net parameters so that it works with 5f/halt data, and run.
 
-# 2. Training:
-	# - Gridsearch over weight decay, learning rate, batch size.
-		# Learning rate: [0.0001 10, 0.05]
-		# Weight decay: [0.0001 0.1]
-		# Batch size: [16, 32, 64, 128]
-	# - Save (only) the learning plot for each model training, with parameters
-		# on file name.
-
-# 3. Model hyperparameter optimization (learning rate, weight decay, batch
+# 2. Model hyperparameter optimization (learning rate, weight decay, batch
 	# size, kernel sizes, Adam's parameters, dropout).
-# 4. EEG hyperparameter optimization (window_size, downsampling frequency,
+# 3. EEG hyperparameter optimization (window_size, downsampling frequency,
 	# number of used channels, low- and high-frequency cuts).
-# 5. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
-# 6. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 7. Data augmentation techniques (also beneficial for regularization).
-# 8. Use other deep learning models.
+# 4. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
+# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 6. Data augmentation techniques (also beneficial for regularization).
+# 7. Use other deep learning models.
 
 
 
@@ -84,13 +76,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='bci_iv_2a')
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--test_set', type=str, default='validation')
-parser.add_argument('--inter_subject', type=bool, default=True)
-parser.add_argument('--cropped', type=bool, default=False)
-parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
-parser.add_argument('--n_epochs', type=int, default=50)
+parser.add_argument('--inter_subject', type=bool, default=False)
+parser.add_argument('--cropped', type=bool, default=True)
+parser.add_argument('--model', type=str, default='Deep4Net')
+parser.add_argument('--n_epochs', type=int, default=300)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=0.005)
-parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--wd', type=float, default=0.01)
+parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
 		'studies/dnn_bci', type=str)
@@ -259,37 +251,38 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 # =============================================================================
 # Storing the results into a dictionary
 # =============================================================================
-#results = {
-		#"history": clf.history,
-		#"y_true": np.asarray(valid_set.get_metadata()["target"]),
-		#"y_pred": clf.predict(valid_set),
-		#"args": args
-#}
+results = {
+		"history": clf.history,
+		"y_true": np.asarray(valid_set.get_metadata()["target"]),
+		"y_pred": clf.predict(valid_set),
+		"args": args
+}
 
 
 # =============================================================================
 # Saving the results
 # =============================================================================
-save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+
-		args.dataset, 'sub-'+format(args.test_sub, '02'), 'inter_subject-'+
-		str(args.inter_subject), 'model-'+args.model, 'cropped-'+
-		str(args.cropped), 'hz-'+format(int(args.sfreq), '04'), 'lfreq-'+
+save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
+		'sub-'+format(args.test_sub,'02'), 'model-'+args.model, 'cropped-'+
+		str(args.cropped), 'hz-'+format(int(args.sfreq),'04'), 'lfreq-'+
 		str(args.l_freq)+'_hfreq-'+str(args.h_freq))
-file_name = 'epochs-'+format(args.n_epochs, '03')+'_lr-'+str(args.lr)+'_wd-'+\
-		str(args.wd)+'.npy'
+file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
+		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_wd-'+\
+		str(args.wd)+'_tbs-'+format(args.batch_size,'03')+'.npy'
 
 # Creating the directory if not existing
-# if os.path.isdir(os.path.join(args.project_dir, save_dir)) == False:
-# 	os.makedirs(os.path.join(args.project_dir, save_dir))
-# np.save(os.path.join(args.project_dir, save_dir, file_name), results)
+if os.path.isdir(os.path.join(args.project_dir, save_dir)) == False:
+	os.makedirs(os.path.join(args.project_dir, save_dir))
+np.save(os.path.join(args.project_dir, save_dir, file_name_data), results)
 
 
 # =============================================================================
-# Plotting the training statistics
+# Plotting and saving the training statistics
 # =============================================================================
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import pandas as pd
+
 # Extract loss and accuracy values for plotting from history object
 results_columns = ['train_loss', 'valid_loss', 'train_accuracy',
 		'valid_accuracy']
@@ -301,7 +294,7 @@ df = df.assign(train_misclass=100 - 100 * df.train_accuracy,
 		valid_misclass=100 - 100 * df.valid_accuracy)
 
 plt.style.use('seaborn')
-fig, ax1 = plt.subplots(figsize=(8, 3))
+fig, ax1 = plt.subplots(figsize=(20, 10))
 df.loc[:, ['train_loss', 'valid_loss']].plot(
 		ax=ax1, style=['-', ':'], marker='o', color='tab:blue', legend=False,
 		fontsize=14)
@@ -326,3 +319,9 @@ handles.append(Line2D([0], [0], color='black', linewidth=1, linestyle=':',
 		label='Valid'))
 plt.legend(handles, [h.get_label() for h in handles], fontsize=14)
 plt.tight_layout()
+
+# Saving the figure
+file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
+		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_wd-'+\
+		str(args.wd)+'_tbs-'+format(args.batch_size,'03')+'.jpg'
+plt.savefig(os.path.join(save_dir, file_name_plot))
