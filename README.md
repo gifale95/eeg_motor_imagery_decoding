@@ -1,7 +1,16 @@
 # Decoding Motor Imagery states from EEG data using Convolutional Neural Networks
-This repository provides Python code for the decoding of different motor imagery conditions from raw EEG data, using CNNs. Install the following packages to run the analyses:
-1. Braindecode from https://github.com/braindecode/braindecode.
-2. MNE-Python from https://github.com/mne-tools/mne-python.
+This repository provides Python code for the decoding of different motor imagery conditions from raw EEG data, using CNNs.
+
+
+
+## Environment setup
+To run the code create a dedicate Anaconda environment with the following steps:
+
+.. code-block:: bash
+
+  curl -O https://github.com/gifale95/eeg_motor_imagery_decoding/environment.yml
+  conda env create -f environment.yml
+  conda activate dnn_bci
 
 
 

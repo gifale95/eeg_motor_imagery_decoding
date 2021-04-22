@@ -1,0 +1,22 @@
+name: dnn_bci
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+- python>=3.7
+- numpy
+- pandas
+- scipy
+- mkl
+- matplotlib
+- h5py
+- pytorch
+- pytest
+- pip
+- skorch
+- pip:
+  - mne
+  - https://github.com/braindecode/braindecode/zipball/master
+  - argparse
+  - moabb
