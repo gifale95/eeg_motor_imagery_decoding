@@ -4,11 +4,7 @@ This repository provides Python code for the decoding of different motor imagery
 
 
 ## Environment setup
-To run the code create a dedicate Anaconda environment with the following steps:
-.. code-block:: bash
-	curl -O https://github.com/gifale95/eeg_motor_imagery_decoding/environment.yml
-	conda env create -f environment.yml
-	conda activate dnn_bci
+To run the code, download the file `eeg_motor_imagery_decoding/environment.yml`, and use it to create a conda environmen by typing `conda env create -f environment.yml` on the terminal. Then you can activate the environment with `conda activate dnn_bci` and run the code on it.
 
 
 
