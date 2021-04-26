@@ -107,9 +107,10 @@ def load_5f_halt(args):
 		data = np.append(data, marker, 0)
 		del marker
 
-		### Converting to MNE format ###
+		### Converting to MNE format and downsample ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
+		raw_train.resample(100)
 		raw_train.info['highpass'] = 0.53
 		raw_train.info['lowpass'] = 70
 		del data
@@ -187,6 +188,7 @@ def load_5f_halt(args):
 				annotations_test = mne.annotations_from_events(events_test,
 						sfreq, event_desc=event_desc)
 				# Creating 1s trials
+				annotations_train.duration = np.repeat(1., len(events_train))
 				annotations_val.duration = np.repeat(1., len(events_val))
 				annotations_test.duration = np.repeat(1., len(events_test))
 				# Adding annotations to raw data

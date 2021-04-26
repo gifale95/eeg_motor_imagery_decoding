@@ -1,15 +1,26 @@
 # =============================================================================
 # TO DO
 # =============================================================================
-# 1. Change Deep4Net parameters so that it works with 5f/halt data, and run.
+# 1. HaLT:
+	# - Intra-subject grid-search.
+	# - Inter-subject grid-search.
+
+# 2. 5F:
+	# - Add 1000Hz 5F data to 200Hz data, and keep the one which is best
+			# decodable.
+	# - Make sure they have the same high-/low-freq filtering.
+	# - Make sure data from 2 frequencies can be used for inter-subject
+			# learning.
+	# - Intra-subject grid-search.
+	# - Inter-subject grid-search.
 
 # 2. Model hyperparameter optimization (learning rate, weight decay, batch
-	# size, kernel sizes, Adam's parameters, dropout).
-# 3. EEG hyperparameter optimization (window_size, downsampling frequency,
-	# number of used channels, low- and high-frequency cuts).
+	# size, kernel/filter sizes, Adam's parameters, dropout).
+# 3. Data augmentation techniques (also beneficial for regularization).
+
 # 4. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
-# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 6. Data augmentation techniques (also beneficial for regularization).
+# 5. bci_iv_2a: fix environment issue with MOABB on Curta.
+# 6. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
 # 7. Use other deep learning models.
 
 
@@ -19,17 +30,17 @@
 Parameters
 ----------
 dataset : str
-		Used dataset ['bci_iv_2a', 'halt', '5f'].
+		Used dataset.
 test_sub : int
 		Used test subject.
 test_set : str
-		Used data for testing ['validation', 'test'].
+		Used data for testing.
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
 cropped : bool
 		Whether to use cropped trials or not.
 model : str
-		Used neural network model ['ShallowFBCSPNet', 'Deep4Net'].
+		Used neural network model.
 n_epochs : int
 		Number of training epochs.
 lr : float
@@ -73,13 +84,16 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='bci_iv_2a')
-parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--test_set', type=str, default='validation')
+parser.add_argument('--dataset', type=str, default='halt',
+		choices=['bci_iv_2a', 'halt', '5f'])
+parser.add_argument('--test_sub', type=int, default=4)
+parser.add_argument('--test_set', type=str, default='validation',
+		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=True)
-parser.add_argument('--model', type=str, default='Deep4Net')
-parser.add_argument('--n_epochs', type=int, default=300)
+parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
+		choices=['ShallowFBCSPNet', 'Deep4Net'])
+parser.add_argument('--n_epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=0.01)
 parser.add_argument('--batch_size', type=int, default=64)
@@ -177,6 +191,8 @@ if args.model == 'ShallowFBCSPNet':
 	)
 elif args.model == 'Deep4Net':
 	model = Deep4Net(
+			n_filters_time=50,
+			filter_time_length=30,
 			in_chans=args.nchan,
 			n_classes=args.n_classes,
 			input_window_samples=args.input_window_samples,
