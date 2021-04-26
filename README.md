@@ -20,6 +20,7 @@ The following data files were used for the analysis:
 2. _5F-SubjectB-160316-5St-SGLHand.mat_
 3. _5F-SubjectC-151204-5St-SGLHand.mat_
 4. _5F-SubjectF-151027-5St-SGLHand.mat_
+
 To run the code, add the files to the directory `/project_dir/datasets/halt/data/used_data/`.
 
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
@@ -39,6 +40,7 @@ The following data files were used for the analysis:
 10. _HaLTSubjectK1610276StLRHandLegTongue.mat_
 11. _HaLTSubjectL1611166StLRHandLegTongue.mat_
 12. _HaLTSubjectM1611086StLRHandLegTongue.mat_
+
 To run the code, add the files to the directory `/project_dir/datasets/5f/data/used_data/`.
 
 
