@@ -14,14 +14,12 @@
 	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 
-# 2. Model hyperparameter optimization (learning rate, weight decay, batch
-	# size, kernel/filter sizes, Adam's parameters, dropout).
-# 3. Data augmentation techniques (also beneficial for regularization).
+# 3. Model hyperparameter optimization (learning rate, weight decay, batch
+		# size, kernel/filter sizes, Adam's parameters, dropout).
+# 4. Data augmentation techniques (also beneficial for regularization).
 
-# 4. Why HFREQ data of F5 not working? Fix to have 8 subjects instead of 4.
-# 5. bci_iv_2a: fix environment issue with MOABB on Curta.
-# 6. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 7. Use other deep learning models.
+# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 6. Use other deep learning models.
 
 
 
@@ -86,7 +84,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='halt',
 		choices=['halt', '5f'])
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--test_set', type=str, default='validation',
+parser.add_argument('--test_set', type=str, default='test',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=True)
@@ -94,7 +92,7 @@ parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
 parser.add_argument('--n_epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=0.01)
+parser.add_argument('--wd', type=float, default=1)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'

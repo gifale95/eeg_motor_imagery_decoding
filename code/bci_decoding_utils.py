@@ -36,7 +36,7 @@ def load_5f_halt(args):
 	dataset = []
 	if args.dataset == '5f':
 		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
-				'used_data')
+				'hfreq_data') # !!!
 	elif args.dataset == 'halt':
 		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data',
 				'used_data')
@@ -60,12 +60,11 @@ def load_5f_halt(args):
 		### Converting to MNE format and downsample ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
-		raw_train.resample(100)
 		raw_train.info['highpass'] = 0.53
 		raw_train.info['lowpass'] = 70
 		del data
 
-		### Get events ###
+		### Get events and downsample data ###
 		events = mne.find_events(raw_train, stim_channel='stim', output='onset',
 				consecutive='increasing')
 		# Drop unused events
@@ -76,6 +75,9 @@ def load_5f_halt(args):
 		events = events[idx]
 		# Drop stimuli channel
 		raw_train.pick_types(eeg=True)
+		# Downsampling the data to 100Hz
+		raw_train.resample(100)
+
 
 		### Dividing events into training, validation and test ###
 		# For intra-subject decoding 4/6 of the data of the subject of interest
