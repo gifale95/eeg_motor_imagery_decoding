@@ -19,4 +19,3 @@ dependencies:
   - mne
   - https://github.com/braindecode/braindecode/zipball/master
   - argparse
-  - moabb
