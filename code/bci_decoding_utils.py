@@ -1,53 +1,3 @@
-def load_bci_iv_2a(args):
-	"""Loading and preprocessing the validation/traning data of the BCI
-	Competition IV dataset 2a dataset.
-
-	Parameters
-	----------
-	args : Namespace
-			Input arguments.
-
-	Returns
-	----------
-	dataset : BaseConcatDataset
-			BaseConcatDataset of raw MNE arrays.
-
-	"""
-
-	import numpy as np
-	from braindecode.datautil.preprocess import MNEPreproc, NumpyPreproc
-	from braindecode.datautil.preprocess import exponential_moving_standardize
-	from braindecode.datasets.moabb import MOABBDataset
-	from braindecode.datautil.preprocess import preprocess
-
-	### Loading the data ###
-	if args.inter_subject == False:
-		dataset = MOABBDataset(dataset_name="BNCI2014001",
-				subject_ids=args.test_sub)
-	else:
-		dataset = MOABBDataset(dataset_name="BNCI2014001",
-				subject_ids=list(np.arange(1, args.tot_sub+1)))
-
-	### Preprocessing the data ###
-	# Defining the preprocessor
-	preprocessors = [
-			# Keep only EEG sensors
-			MNEPreproc(fn='pick_types', eeg=True, meg=False, stim=False),
-			# Convert from volt to microvolt, directly modifying the numpy array
-			NumpyPreproc(fn=lambda x: x * 1e6),
-			# bandpass filter
-			MNEPreproc(fn='filter', l_freq=0.53, h_freq=70),
-			# Exponential moving standardization
-			NumpyPreproc(fn=exponential_moving_standardize, factor_new=0.001,
-					init_block_size=1000, eps=0.0001)
-	]
-	# Preprocessing
-	preprocess(dataset, preprocessors)
-
-	### Output ###
-	return dataset
-
-
 def load_5f_halt(args):
 	"""Loading and preprocessing the validation/traning data of the 5F or HaLT
 	datasets.
@@ -247,7 +197,6 @@ def windowing_data(dataset, args):
 	"""
 
 	from braindecode.datautil.windowers import create_windows_from_events
-	import numpy as np
 
 	### Windowing the data ###
 	# Extract sampling frequency, check that they are same in all datasets
@@ -272,26 +221,6 @@ def windowing_data(dataset, args):
 			preload=True,
 		)
 	del dataset
-
-	### Dividing bci_iv_2a data into training, validation and test ###
-	# For intra-subject decoding 4/6 of the data of the subject of interest
-	# is used for training, 1/6 for validation and 1/6 for testing.
-	# For inter-subject decoding 1/2 of the data of the subject of interest
-	# is used for validation and 1/2 for testing. All the data from the
-	# other subjects is used for training.
-	if args.dataset == 'bci_iv_2a':
-		if args.inter_subject == False:
-			windows_dataset.description.loc[:8,'session'] = 'training'
-			windows_dataset.description.loc[8:10,'session'] = 'validation'
-			windows_dataset.description.loc[10:12,'session'] = 'test'
-		else:
-			windows_dataset.description.loc[:,'session'] = 'training'
-			idx_test_sub = windows_dataset.description.loc[:, 'subject'] ==\
-					args.test_sub
-			windows_dataset.description.loc[idx_test_sub,'session'] =\
-					'validation'
-			idx_test = np.where(idx_test_sub == True)[0][6:12]
-			windows_dataset.description.loc[idx_test,'session'] = 'test'
 
 	### Dividing training, validation and test data ###
 	windows_dataset = windows_dataset.split('session')

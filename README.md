@@ -13,9 +13,6 @@ conda activate dnn_bci
 
 
 ## EEG motor imagery datasets
-#### BCI Competition IV dataset 2a
-Motor imagery dataset (Brunner et al., 2008) of 9 subjects with 4 motor imagery coditions: left hand, right hand, both feet, tongue. Each condition has 144 four-second trials, recorded using 22 EEG channels. Data and the accompanying paper can be found at http://bbci.de/competition/iv/#dataset2a.
-
 #### 5F dataset
 4 subjects motor imagery dataset (Kaya et al., 2018) of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. Each condition has 150 one-second trials, recorded using 19 EEG channels. Data and the accompanying paper can be found [here][kaya].
 The following data files were used for the analysis:
@@ -59,5 +56,5 @@ This is analogous to a data augmentation technique: instead of full trials, the 
 
 
 ## Inter-subject learning
-The inter-subject learning approach aims at understanding how well a CNN trained on decoding the motor imagery trials of a set of subjects is capable of generalizing its decoding performance on a held-out subject. In other words, this is testing the possibility of pre-trained EEG BCI devices which readily work on novel subjects without the need of additional training data.
+Inter-subject learning is a zero-shot learning approach which aims at understanding how well a CNN trained on decoding the motor imagery trials of a set of subjects is capable of generalizing its decoding performance on a held-out subject. In other words, this is testing the possibility of pre-trained EEG BCI devices which readily work on novel subjects without the need of any training data from these subjects.
 

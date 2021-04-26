@@ -64,7 +64,6 @@ import argparse
 import numpy as np
 import os
 
-from bci_decoding_utils import load_bci_iv_2a
 from bci_decoding_utils import load_5f_halt
 from bci_decoding_utils import windowing_data
 
@@ -85,8 +84,8 @@ from skorch.helper import predefined_split
 # =============================================================================
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='halt',
-		choices=['bci_iv_2a', 'halt', '5f'])
-parser.add_argument('--test_sub', type=int, default=4)
+		choices=['halt', '5f'])
+parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
@@ -112,10 +111,7 @@ for key, val in vars(args).items():
 # =============================================================================
 # Dataset-specific parameters
 # =============================================================================
-if args.dataset == 'bci_iv_2a':
-	args.tot_sub = 9
-	args.trial_start_offset_seconds = -0.5
-elif args.dataset == '5f':
+if args.dataset == '5f':
 	args.tot_sub = 4
 	args.trial_start_offset_seconds = -0.25
 elif args.dataset == 'halt':
@@ -142,10 +138,7 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # For inter-subject decoding 1/2 of the data of the subject of interest is used
 # for validation and 1/2 for testing. All the data from the other subjects is
 # used for training.
-if args.dataset == 'bci_iv_2a':
-	dataset = load_bci_iv_2a(args)
-else:
-	dataset = load_5f_halt(args)
+dataset = load_5f_halt(args)
 
 # Getting EEG data info
 args.n_classes = len(np.unique(dataset.datasets[0].raw.annotations.description))
