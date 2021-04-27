@@ -21,7 +21,7 @@ The following data files were used for the analysis:
 3. _5F-SubjectC-151204-5St-SGLHand.mat_
 4. _5F-SubjectF-151027-5St-SGLHand.mat_
 
-To run the code, add the files to the directory `/project_dir/datasets/halt/data/used_data/`.
+To run the code, add the files to the directory `/project_dir/datasets/halt/data/`.
 
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 

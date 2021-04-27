@@ -2,15 +2,9 @@
 # TO DO
 # =============================================================================
 # 1. HaLT:
-	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 
 # 2. 5F:
-	# - Add 1000Hz 5F data to 200Hz data, and keep the one which is best
-			# decodable.
-	# - Make sure they have the same high-/low-freq filtering.
-	# - Make sure data from 2 frequencies can be used for inter-subject
-			# learning.
 	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 
@@ -81,18 +75,18 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='halt',
+parser.add_argument('--dataset', type=str, default='5f',
 		choices=['halt', '5f'])
 parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--test_set', type=str, default='test',
+parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
-parser.add_argument('--inter_subject', type=bool, default=False)
+parser.add_argument('--inter_subject', type=bool, default=True)
 parser.add_argument('--cropped', type=bool, default=True)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
 parser.add_argument('--n_epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=1)
+parser.add_argument('--wd', type=float, default=0.01)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'

@@ -38,8 +38,7 @@ def load_5f_halt(args):
 		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
 				'hfreq_data') # !!!
 	elif args.dataset == 'halt':
-		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data',
-				'used_data')
+		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data')
 	files = os.listdir(data_dir)
 	files.sort()
 	# Loading only one subject for intra-subject analysis
@@ -48,6 +47,7 @@ def load_5f_halt(args):
 
 	### Loading and preprocessing the .mat data ###
 	for i, file in enumerate(files):
+		print('\n\nData file --> '+file+'\n\n')
 		data = io.loadmat(os.path.join(data_dir, file),
 				chars_as_strings=True)['o']
 		sfreq = np.asarray(data[0][0]['sampFreq'][0])
@@ -77,7 +77,6 @@ def load_5f_halt(args):
 		raw_train.pick_types(eeg=True)
 		# Downsampling the data to 100Hz
 		raw_train.resample(100)
-
 
 		### Dividing events into training, validation and test ###
 		# For intra-subject decoding 4/6 of the data of the subject of interest
@@ -140,7 +139,6 @@ def load_5f_halt(args):
 				annotations_test = mne.annotations_from_events(events_test,
 						sfreq, event_desc=event_desc)
 				# Creating 1s trials
-				annotations_train.duration = np.repeat(1., len(events_train))
 				annotations_val.duration = np.repeat(1., len(events_val))
 				annotations_test.duration = np.repeat(1., len(events_test))
 				# Adding annotations to raw data
