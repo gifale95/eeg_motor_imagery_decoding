@@ -2,6 +2,7 @@
 # TO DO
 # =============================================================================
 # 1. HaLT:
+	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 
 # 2. 5F:
@@ -29,8 +30,6 @@ test_set : str
 		Used data for testing.
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
-cropped : bool
-		Whether to use cropped trials or not.
 model : str
 		Used neural network model.
 n_epochs : int
@@ -81,7 +80,6 @@ parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
-parser.add_argument('--cropped', type=bool, default=True)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
 parser.add_argument('--n_epochs', type=int, default=100)
@@ -142,17 +140,10 @@ args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 args.nchan = dataset.datasets[0].raw.info['nchan']
 args.ch_names = dataset.datasets[0].raw.info['ch_names']
 
-# When using full trials, the window size is given by the total trial length
-# plus its start offset.
 # When using cropped trials, the window size is kept at the total trial length
 # (without start offset) for computational efficiency.
-if args.cropped == True:
-	args.input_window_samples = int(
-			dataset.datasets[0].raw.annotations.duration[0] * args.sfreq)
-else:
-	args.input_window_samples = int(
-			dataset.datasets[0].raw.annotations.duration[0]
-			* args.sfreq + abs(args.trial_start_offset_samples))
+args.input_window_samples = int(
+		dataset.datasets[0].raw.annotations.duration[0] * args.sfreq)
 
 
 # =============================================================================
@@ -162,10 +153,7 @@ else:
 # efficiently, we manually set the length of the final convolution layer to
 # some length that makes the receptive field of the ConvNet smaller than
 # "input_window_samples" (e.g., "final_conv_length=30").
-if args.cropped == False:
-	final_conv_length = 'auto'
-else:
-	final_conv_length = 1
+final_conv_length = 1
 
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
@@ -190,8 +178,7 @@ if cuda:
 
 # Transform the model with strides to a model that outputs dense prediction, so
 # it can be used to obtain predictions for all crops
-if args.cropped == True:
-	to_dense_prediction_model(model)
+to_dense_prediction_model(model)
 
 
 # =============================================================================
@@ -199,9 +186,8 @@ if args.cropped == True:
 # =============================================================================
 # To know the models’ receptive field, we calculate the shape of model output
 # for a dummy input. The model's receptive field size defines the crop size.
-if args.cropped == True:
-	args.n_preds_per_input = get_output_shape(model, args.nchan,
-			args.input_window_samples)[2]
+args.n_preds_per_input = get_output_shape(model, args.nchan,
+		args.input_window_samples)[2]
 
 valid_set, train_set = windowing_data(dataset, args)
 del dataset
@@ -210,39 +196,24 @@ del dataset
 # =============================================================================
 # Training the model
 # =============================================================================
-if args.cropped == True:
-	clf = EEGClassifier(
-		model,
-		cropped=True,
-		criterion=CroppedLoss,
-		criterion__loss_function=torch.nn.functional.nll_loss,
-		optimizer=torch.optim.AdamW,
-		train_split=predefined_split(valid_set),
-		optimizer__lr=args.lr,
-		optimizer__weight_decay=args.wd,
-		iterator_train__shuffle=True,
-		batch_size=args.batch_size,
-		callbacks=[
-				"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
-				T_max=args.n_epochs - 1)),
-		],
-		device=args.device,
-	)
-else:
-	clf = EEGClassifier(
-			model,
-			criterion=torch.nn.NLLLoss,
-			optimizer=torch.optim.AdamW,
-			train_split=predefined_split(valid_set),
-			optimizer__lr=args.lr,
-			optimizer__weight_decay=args.wd,
-			batch_size=args.batch_size,
-			callbacks=[
-					"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
-					T_max=args.n_epochs - 1)),
-			],
-			device=args.device,
-	)
+clf = EEGClassifier(
+	model,
+	cropped=True,
+	criterion=CroppedLoss,
+	criterion__loss_function=torch.nn.functional.nll_loss,
+	optimizer=torch.optim.AdamW,
+	train_split=predefined_split(valid_set),
+	optimizer__lr=args.lr,
+	optimizer__weight_decay=args.wd,
+	iterator_train__shuffle=True,
+	batch_size=args.batch_size,
+	callbacks=[
+			"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
+			T_max=args.n_epochs - 1)),
+	],
+	device=args.device,
+)
+
 
 # Model training for a specified number of epochs. "y" is None as it is already
 # supplied in the dataset.
@@ -264,9 +235,9 @@ results = {
 # Saving the results
 # =============================================================================
 save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
-		'sub-'+format(args.test_sub,'02'), 'model-'+args.model, 'cropped-'+
-		str(args.cropped), 'hz-'+format(int(args.sfreq),'04'), 'lfreq-'+
-		str(args.l_freq)+'_hfreq-'+str(args.h_freq))
+		'sub-'+format(args.test_sub,'02'), 'model-'+args.model, 'hz-'+
+		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
+		str(args.h_freq))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
 		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_wd-'+\
 		str(args.wd)+'_tbs-'+format(args.batch_size,'03')+'.npy'

@@ -202,23 +202,15 @@ def windowing_data(dataset, args):
 	sfreq = dataset.datasets[0].raw.info['sfreq']
 	assert all([ds.raw.info['sfreq'] == sfreq for ds in dataset.datasets])
 	# Create windows using braindecode functions.
-	if args.cropped == True:
-		windows_dataset = create_windows_from_events(
-			dataset,
-			trial_start_offset_samples=args.trial_start_offset_samples,
-			trial_stop_offset_samples=0,
-			window_size_samples=args.input_window_samples,
-			window_stride_samples=args.n_preds_per_input,
-			drop_last_window=False,
-			preload=True,
-		)
-	else:
-		windows_dataset = create_windows_from_events(
-			dataset,
-			trial_start_offset_samples=args.trial_start_offset_samples,
-			trial_stop_offset_samples=0,
-			preload=True,
-		)
+	windows_dataset = create_windows_from_events(
+		dataset,
+		trial_start_offset_samples=args.trial_start_offset_samples,
+		trial_stop_offset_samples=0,
+		window_size_samples=args.input_window_samples,
+		window_stride_samples=args.n_preds_per_input,
+		drop_last_window=False,
+		preload=True,
+	)
 	del dataset
 
 	### Dividing training, validation and test data ###
