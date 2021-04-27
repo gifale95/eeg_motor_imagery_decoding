@@ -35,8 +35,7 @@ def load_5f_halt(args):
 	### Subjects ###
 	dataset = []
 	if args.dataset == '5f':
-		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data',
-				'hfreq_data') # !!!
+		data_dir = os.path.join(args.project_dir, 'datasets', '5f', 'data')
 	elif args.dataset == 'halt':
 		data_dir = os.path.join(args.project_dir, 'datasets', 'halt', 'data')
 	files = os.listdir(data_dir)
@@ -60,8 +59,8 @@ def load_5f_halt(args):
 		### Converting to MNE format and downsample ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
-		raw_train.info['highpass'] = 0.53
-		raw_train.info['lowpass'] = 70
+		#raw_train.info['highpass'] = 0.53
+		#raw_train.info['lowpass'] = 70
 		del data
 
 		### Get events and downsample data ###

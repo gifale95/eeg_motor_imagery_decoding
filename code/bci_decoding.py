@@ -80,7 +80,7 @@ parser.add_argument('--dataset', type=str, default='5f',
 parser.add_argument('--test_sub', type=int, default=1)
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
-parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--cropped', type=bool, default=True)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
