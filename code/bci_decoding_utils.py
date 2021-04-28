@@ -59,8 +59,8 @@ def load_5f_halt(args):
 		### Converting to MNE format and downsample ###
 		info = mne.create_info(ch_names, sfreq, ch_types)
 		raw_train = mne.io.RawArray(data, info)
-		#raw_train.info['highpass'] = 0.53
-		#raw_train.info['lowpass'] = 70
+		raw_train.info['highpass'] = 0.53
+		raw_train.info['lowpass'] = 70
 		del data
 
 		### Get events and downsample data ###

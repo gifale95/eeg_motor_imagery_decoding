@@ -2,19 +2,20 @@
 # TO DO
 # =============================================================================
 # 1. HaLT:
-	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
-
+	# - Inter-subject grid-search.
 # 2. 5F:
-	# - Intra-subject grid-search.
+	# - Inter-subject grid-search.
 	# - Inter-subject grid-search.
 
 # 3. Model hyperparameter optimization (learning rate, weight decay, batch
 		# size, kernel/filter sizes, Adam's parameters, dropout).
-# 4. Data augmentation techniques (also beneficial for regularization).
+# 4. Use Perceiver as decoding model.
+# 5. Data augmentation techniques (also beneficial for regularization).
+# 6. Remove Deep model from code if it cannot be used with the data.
 
-# 5. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 6. Use other deep learning models.
+# 7. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
+# 8. Use other deep learning models.
 
 
 
@@ -82,7 +83,7 @@ parser.add_argument('--test_set', type=str, default='validation',
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
-parser.add_argument('--n_epochs', type=int, default=100)
+parser.add_argument('--n_epochs', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=0.01)
 parser.add_argument('--batch_size', type=int, default=64)
@@ -239,8 +240,8 @@ save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
 		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
 		str(args.h_freq))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_wd-'+\
-		str(args.wd)+'_tbs-'+format(args.batch_size,'03')+'.npy'
+		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
+		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.npy'
 
 # Creating the directory if not existing
 if os.path.isdir(os.path.join(args.project_dir, save_dir)) == False:
@@ -294,6 +295,6 @@ plt.tight_layout()
 
 # Saving the figure
 file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_wd-'+\
-		str(args.wd)+'_tbs-'+format(args.batch_size,'03')+'.jpg'
+		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
+		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.jpg'
 plt.savefig(os.path.join(save_dir, file_name_plot))
