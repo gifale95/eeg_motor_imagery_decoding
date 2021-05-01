@@ -67,7 +67,6 @@ from braindecode import EEGClassifier
 from braindecode.training.losses import CroppedLoss
 
 import torch
-from skorch.callbacks import LRScheduler
 from skorch.helper import predefined_split
 
 
@@ -83,9 +82,9 @@ parser.add_argument('--test_set', type=str, default='validation',
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
-parser.add_argument('--n_epochs', type=int, default=500)
+parser.add_argument('--n_epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=0.01)
+parser.add_argument('--wd', type=float, default=1)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
@@ -208,10 +207,7 @@ clf = EEGClassifier(
 	optimizer__weight_decay=args.wd,
 	iterator_train__shuffle=True,
 	batch_size=args.batch_size,
-	callbacks=[
-			"accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR',
-			T_max=args.n_epochs - 1)),
-	],
+	callbacks=["accuracy"],
 	device=args.device,
 )
 
@@ -297,4 +293,4 @@ plt.tight_layout()
 file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
 		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
 		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.jpg'
-plt.savefig(os.path.join(save_dir, file_name_plot))
+#plt.savefig(os.path.join(save_dir, file_name_plot))
