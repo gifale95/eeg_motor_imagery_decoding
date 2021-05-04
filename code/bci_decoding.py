@@ -74,18 +74,18 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f',
+parser.add_argument('--dataset', type=str, default='halt',
 		choices=['halt', '5f'])
-parser.add_argument('--test_sub', type=int, default=1)
+parser.add_argument('--test_sub', type=int, default=8)
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
 		choices=['ShallowFBCSPNet', 'Deep4Net'])
-parser.add_argument('--n_epochs', type=int, default=1000)
+parser.add_argument('--n_epochs', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=1)
-parser.add_argument('--batch_size', type=int, default=64)
+parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
 		'studies/dnn_bci', type=str)
@@ -221,10 +221,10 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 # Storing the results into a dictionary
 # =============================================================================
 results = {
-		"history": clf.history,
-		"y_true": np.asarray(valid_set.get_metadata()["target"]),
-		"y_pred": clf.predict(valid_set),
-		"args": args
+		'history': clf.history,
+		'y_true': np.asarray(valid_set.get_metadata()['target']),
+		'y_pred': clf.predict(valid_set),
+		'args': args
 }
 
 
@@ -293,4 +293,4 @@ plt.tight_layout()
 file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
 		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
 		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.jpg'
-#plt.savefig(os.path.join(save_dir, file_name_plot))
+plt.savefig(os.path.join(save_dir, file_name_plot))

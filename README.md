@@ -24,8 +24,7 @@ This is a motor imagery dataset of the 5 hand fingers movement: thumb, index fin
 4. _5F-SubjectE-160415-5St-SGLHand-HFREQ.mat_
 5. _5F-SubjectF-160210-5St-SGLHand-HFREQ.mat_
 6. _5F-SubjectG-160413-5St-SGLHand-HFREQ.mat_
-7. _5F-SubjectH-160804-5St-SGLHand-HFREQ.mat_
-8. _5F-SubjectI-160719-5St-SGLHand-HFREQ.mat_
+7. _5F-SubjectI-160719-5St-SGLHand-HFREQ.mat_
 
 To run the code, add the files to the directory `/project_dir/datasets/5f/data/`.
 
@@ -39,12 +38,10 @@ This is a dataset comprising of 6 motor imagery conditions: left hand, right han
 4. _HaLTSubjectE1602196StLRHandLegTongue.mat_
 5. _HaLTSubjectF1602026StLRHandLegTongue.mat_
 6. _HaLTSubjectG1603016StLRHandLegTongue.mat_
-7. _HaLTSubjectH1607206StLRHandLegTongue.mat_
-8. _HaLTSubjectI1606286StLRHandLegTongue.mat_
-9. _HaLTSubjectJ1611216StLRHandLegTongue.mat_
-10. _HaLTSubjectK1610276StLRHandLegTongue.mat_
-11. _HaLTSubjectL1611166StLRHandLegTongue.mat_
-12. _HaLTSubjectM1611086StLRHandLegTongue.mat_
+7. _HaLTSubjectJ1611216StLRHandLegTongue.mat_
+8. _HaLTSubjectK1610276StLRHandLegTongue.mat_
+9. _HaLTSubjectL1611166StLRHandLegTongue.mat_
+10. _HaLTSubjectM1611086StLRHandLegTongue.mat_
 
 To run the code, add the files to the directory `/project_dir/datasets/halt/data/`.
 
