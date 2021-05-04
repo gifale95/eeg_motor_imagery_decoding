@@ -102,10 +102,10 @@ for key, val in vars(args).items():
 # Dataset-specific parameters
 # =============================================================================
 if args.dataset == '5f':
-	args.tot_sub = 4
+	args.tot_sub = 7
 	args.trial_start_offset_seconds = -0.25
 elif args.dataset == 'halt':
-	args.tot_sub = 12
+	args.tot_sub = 10
 	args.trial_start_offset_seconds = -0.25
 
 
