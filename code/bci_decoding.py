@@ -207,7 +207,7 @@ clf = EEGClassifier(
 	optimizer__weight_decay=args.wd,
 	iterator_train__shuffle=True,
 	batch_size=args.batch_size,
-	callbacks=["accuracy"],
+	callbacks=['accuracy'],
 	device=args.device,
 )
 
@@ -218,7 +218,7 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 
 
 # =============================================================================
-# Storing the results into a dictionary
+# Storing the results into a dictionary and saving
 # =============================================================================
 results = {
 		'history': clf.history,
@@ -227,10 +227,6 @@ results = {
 		'args': args
 }
 
-
-# =============================================================================
-# Saving the results
-# =============================================================================
 save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
 		'sub-'+format(args.test_sub,'02'), 'model-'+args.model, 'hz-'+
 		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
