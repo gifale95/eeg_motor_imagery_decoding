@@ -4,7 +4,7 @@ This repository provides Python code for the decoding of different motor imagery
 
 
 ## Environment setup
-To run the code, create and activate a dedicated conda environment by typing the following into your terminal:
+To run the code, create and activate a dedicated Anaconda environment by typing the following into your terminal:
 ```shell
 curl -O https://raw.githubusercontent.com/gifale95/eeg_motor_imagery_decoding/main/environment.yml
 conda env create -f environment.yml
@@ -14,7 +14,7 @@ conda activate dnn_bci
 
 ## EEG motor imagery datasets
 Here we decode two publicly available EEG BCI datasets: **5F** and **HaLT**. For the decoding analysis, the 19-EEG-channels signal is downsampled to 100Hz, and 150 one-second trials are selected for each motor imagery condition.
-The data along with the accompanying paper can be found in [(Kaya et al., 2018)][kaya].
+The data along with the accompanying paper can be found at [(Kaya et al., 2018)][kaya].
 
 #### 5F dataset
 This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. The following data files were used for the analysis:
@@ -31,7 +31,7 @@ To run the code, add the files to the directory `/project_dir/datasets/5f/data/`
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 #### HaLT dataset
-This is a dataset comprising of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. The following data files were used for the analysis:
+This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. The following data files were used for the analysis:
 1. _HaLTSubjectA1602236StLRHandLegTongue.mat_
 2. _HaLTSubjectB1602186StLRHandLegTongue.mat_
 3. _HaLTSubjectC1602246StLRHandLegTongue.mat_
