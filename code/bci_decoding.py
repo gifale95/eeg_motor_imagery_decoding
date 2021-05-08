@@ -1,18 +1,36 @@
 # =============================================================================
 # TO DO
 # =============================================================================
+# Remove deep net.
+
+# Add all decodable sessions from all subjects: how to partition training,
+# validation and test sets?
+
+# Check and choose lr_schedulers (no scheduler, cosine, plateau).
+# Do 1000 epochs for each lr_scheduler option while performing grid-search on
+# 3 subjects, and then select the best lr_scheduler option.
+# No lr_rate scheduler seams to work better: the validation accuracy fluctuates
+# more, and these fluctuations occasionally lead to lower error.
+
+# Gridsearch over 500 epochs, no (or best) lr_scheduler, check wd, lr, tbs.
+# lr in "0.01" "0.005" "0.001" "0.0005" "0.0001"
+# Only use 3 subjects.
+
 # 1. HaLT:
-	# - Inter-subject grid-search.
+	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 # 2. 5F:
-	# - Inter-subject grid-search.
+	# - Intra-subject grid-search.
 	# - Inter-subject grid-search.
 
+
+
+
+
 # 3. Model hyperparameter optimization (learning rate, weight decay, batch
-		# size, kernel/filter sizes, Adam's parameters, dropout).
+		# size, Adam's parameters, kernel/filter sizes, dropout).
 # 4. Use Perceiver as decoding model.
 # 5. Data augmentation techniques (also beneficial for regularization).
-# 6. Remove Deep model from code if it cannot be used with the data.
 
 # 7. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
 # 8. Use other deep learning models.
@@ -61,7 +79,6 @@ from bci_decoding_utils import windowing_data
 
 from braindecode.util import set_random_seeds
 from braindecode.models.shallow_fbcsp import ShallowFBCSPNet
-from braindecode.models.deep4 import Deep4Net
 from braindecode.models.util import to_dense_prediction_model, get_output_shape
 from braindecode import EEGClassifier
 from braindecode.training.losses import CroppedLoss
@@ -74,15 +91,14 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='halt',
+parser.add_argument('--dataset', type=str, default='5f',
 		choices=['halt', '5f'])
-parser.add_argument('--test_sub', type=int, default=8)
-parser.add_argument('--test_set', type=str, default='validation',
+parser.add_argument('--test_sub', type=int, default=1)
+parser.add_argument('--test_set', type=str, default='test',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
-parser.add_argument('--model', type=str, default='ShallowFBCSPNet',
-		choices=['ShallowFBCSPNet', 'Deep4Net'])
-parser.add_argument('--n_epochs', type=int, default=500)
+parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
+parser.add_argument('--n_epochs', type=int, default=20)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
@@ -157,15 +173,6 @@ final_conv_length = 1
 
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
-			in_chans=args.nchan,
-			n_classes=args.n_classes,
-			input_window_samples=args.input_window_samples,
-			final_conv_length=final_conv_length
-	)
-elif args.model == 'Deep4Net':
-	model = Deep4Net(
-			n_filters_time=50,
-			filter_time_length=30,
 			in_chans=args.nchan,
 			n_classes=args.n_classes,
 			input_window_samples=args.input_window_samples,
