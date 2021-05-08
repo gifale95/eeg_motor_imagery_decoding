@@ -1,42 +1,3 @@
-# =============================================================================
-# TO DO
-# =============================================================================
-# Remove deep net.
-
-# Add all decodable sessions from all subjects: how to partition training,
-# validation and test sets?
-
-# Check and choose lr_schedulers (no scheduler, cosine, plateau).
-# Do 1000 epochs for each lr_scheduler option while performing grid-search on
-# 3 subjects, and then select the best lr_scheduler option.
-# No lr_rate scheduler seams to work better: the validation accuracy fluctuates
-# more, and these fluctuations occasionally lead to lower error.
-
-# Gridsearch over 500 epochs, no (or best) lr_scheduler, check wd, lr, tbs.
-# lr in "0.01" "0.005" "0.001" "0.0005" "0.0001"
-# Only use 3 subjects.
-
-# 1. HaLT:
-	# - Intra-subject grid-search.
-	# - Inter-subject grid-search.
-# 2. 5F:
-	# - Intra-subject grid-search.
-	# - Inter-subject grid-search.
-
-
-
-
-
-# 3. Model hyperparameter optimization (learning rate, weight decay, batch
-		# size, Adam's parameters, kernel/filter sizes, dropout).
-# 4. Use Perceiver as decoding model.
-# 5. Data augmentation techniques (also beneficial for regularization).
-
-# 7. Dataset from (Jeong et al., 2020): gigadb.org/dataset/100788
-# 8. Use other deep learning models.
-
-
-
 """Decoding of motor imagery states using convolutional neural networks.
 
 Parameters
@@ -178,6 +139,7 @@ if args.model == 'ShallowFBCSPNet':
 			input_window_samples=args.input_window_samples,
 			final_conv_length=final_conv_length
 	)
+
 
 # Send model to GPU
 if cuda:
