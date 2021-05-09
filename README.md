@@ -17,33 +17,18 @@ Here we decode two publicly available EEG BCI datasets: **5F** and **HaLT**. For
 The data along with the accompanying paper can be found at [(Kaya et al., 2018)][kaya].
 
 #### 5F dataset
-This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. The following data files were used for the analysis:
-1. _5F-SubjectA-160405-5St-SGLHand.mat_
-2. _5F-SubjectB-160316-5St-SGLHand.mat_
-3. _5F-SubjectC-160429-5St-SGLHand-HFREQ.mat_
-4. _5F-SubjectE-160415-5St-SGLHand-HFREQ.mat_
-5. _5F-SubjectF-160210-5St-SGLHand-HFREQ.mat_
-6. _5F-SubjectG-160413-5St-SGLHand-HFREQ.mat_
-7. _5F-SubjectI-160719-5St-SGLHand-HFREQ.mat_
+This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. All data files were used for the analyses except:
+- _5F-SubjectA-160408-5St-SGLHand-HFREQ.mat_
 
-To run the code, add the files to the directory `/project_dir/datasets/5f/data/`.
+To run the code, add the data files to the directory `/project_dir/datasets/5f/data/`.
 
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 #### HaLT dataset
-This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. The following data files were used for the analysis:
-1. _HaLTSubjectA1602236StLRHandLegTongue.mat_
-2. _HaLTSubjectB1602186StLRHandLegTongue.mat_
-3. _HaLTSubjectC1602246StLRHandLegTongue.mat_
-4. _HaLTSubjectE1602196StLRHandLegTongue.mat_
-5. _HaLTSubjectF1602026StLRHandLegTongue.mat_
-6. _HaLTSubjectG1603016StLRHandLegTongue.mat_
-7. _HaLTSubjectJ1611216StLRHandLegTongue.mat_
-8. _HaLTSubjectK1610276StLRHandLegTongue.mat_
-9. _HaLTSubjectL1611166StLRHandLegTongue.mat_
-10. _HaLTSubjectM1611086StLRHandLegTongue.mat_
+This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. All data files were used for the analyses except:
+- _HaLTSubjectI1606286StLRHandLegTongue.mat_
 
-To run the code, add the files to the directory `/project_dir/datasets/halt/data/`.
+To run the code, add the data files to the directory `/project_dir/datasets/halt/data/`.
 
 
 

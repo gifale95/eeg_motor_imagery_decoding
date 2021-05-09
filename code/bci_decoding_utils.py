@@ -42,10 +42,12 @@ def load_5f_halt(args):
 	files.sort()
 	# Loading only one subject for intra-subject analysis
 	if args.inter_subject == False:
-		files = [files[args.test_sub-1]]
+		used_files = []
+		for i,file in enumerate(files):
+			if 'Subject'+args.test_sub in file: used_files.append(file)
 
 	### Loading and preprocessing the .mat data ###
-	for i, file in enumerate(files):
+	for i, file in enumerate(used_files):
 		print('\n\nData file --> '+file+'\n\n')
 		data = io.loadmat(os.path.join(data_dir, file),
 				chars_as_strings=True)['o']
@@ -154,11 +156,12 @@ def load_5f_halt(args):
 				raw_train.set_annotations(annotations_train)
 
 		### Converting to BaseConcatDataset format ###
-		if args.inter_subject == False:
-			i = args.test_sub-1
-		description_train = {"subject": i+1, "session": 'training'}
-		description_val = {"subject": i+1, "session": 'validation'}
-		description_test = {"subject": i+1, "session": 'test'}
+		description_train = {'subject': args.test_sub, 'session': i+1,
+				'partition': 'training'}
+		description_val = {'subject': args.test_sub, 'session': i+1,
+				'partition': 'validation'}
+		description_test = {'subject': args.test_sub, 'session': i+1,
+				'partition': 'test'}
 		if args.inter_subject == False:
 			dataset.append(BaseDataset(raw_train, description_train))
 			dataset.append(BaseDataset(raw_val, description_val))
@@ -214,7 +217,7 @@ def windowing_data(dataset, args):
 	del dataset
 
 	### Dividing training, validation and test data ###
-	windows_dataset = windows_dataset.split('session')
+	windows_dataset = windows_dataset.split('partition')
 	train_set = windows_dataset['training']
 	if args.test_set == 'validation':
 		valid_set = windows_dataset['validation']

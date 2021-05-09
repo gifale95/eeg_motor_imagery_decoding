@@ -4,12 +4,14 @@ Parameters
 ----------
 dataset : str
 		Used dataset.
-test_sub : int
+test_sub : str
 		Used test subject.
 test_set : str
 		Used data for testing.
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
+trial_start_offset_seconds : float
+		Start offset from original trial onsets, in seconds.
 model : str
 		Used neural network model.
 n_epochs : int
@@ -51,15 +53,18 @@ from skorch.helper import predefined_split
 # =============================================================================
 # Input parameters
 # =============================================================================
+# 5F dataset subjects: [A, B, C, E, F, G, H, I]
+# HaLT dataset subjects: [A, B, C, E, F, G, H, I, J, K, L, M]
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f',
 		choices=['halt', '5f'])
-parser.add_argument('--test_sub', type=int, default=1)
-parser.add_argument('--test_set', type=str, default='test',
+parser.add_argument('--test_sub', type=str, default='A')
+parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
+parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
-parser.add_argument('--n_epochs', type=int, default=20)
+parser.add_argument('--n_epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
@@ -73,17 +78,6 @@ print('\n\n\n>>> CNN BCI decoding <<<')
 print('\nInput parameters:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
-
-
-# =============================================================================
-# Dataset-specific parameters
-# =============================================================================
-if args.dataset == '5f':
-	args.tot_sub = 7
-	args.trial_start_offset_seconds = -0.25
-elif args.dataset == 'halt':
-	args.tot_sub = 10
-	args.trial_start_offset_seconds = -0.25
 
 
 # =============================================================================
@@ -116,6 +110,8 @@ args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 		args.sfreq)
 args.nchan = dataset.datasets[0].raw.info['nchan']
 args.ch_names = dataset.datasets[0].raw.info['ch_names']
+if args.inter_subject == False:
+	args.n_sessions = len(np.unique(dataset.description['session']))
 
 # When using cropped trials, the window size is kept at the total trial length
 # (without start offset) for computational efficiency.
@@ -196,7 +192,7 @@ results = {
 }
 
 save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
-		'sub-'+format(args.test_sub,'02'), 'model-'+args.model, 'hz-'+
+		'sub-'+args.test_sub, 'model-'+args.model, 'hz-'+
 		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
 		str(args.h_freq))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
