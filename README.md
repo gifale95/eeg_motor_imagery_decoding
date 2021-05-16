@@ -17,8 +17,14 @@ Here we decode two publicly available EEG BCI datasets: **5F** and **HaLT**. For
 The data along with the accompanying paper can be found at [(Kaya et al., 2018)][kaya].
 
 #### 5F dataset
-This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. All data files were used for the analyses except:
-- _5F-SubjectA-160408-5St-SGLHand-HFREQ.mat_
+This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. The following files were used for the analyses:
+1. _5F-SubjectA-160405-5St-SGLHand.mat_
+2. _5F-SubjectB-160316-5St-SGLHand.mat_
+3. _5F-SubjectC-160429-5St-SGLHand-HFREQ.mat_
+4. _5F-SubjectE-160415-5St-SGLHand-HFREQ.mat_
+5. _5F-SubjectF-160210-5St-SGLHand-HFREQ.mat_
+6. _5F-SubjectG-160413-5St-SGLHand-HFREQ.mat_
+7. _5F-SubjectI-160719-5St-SGLHand-HFREQ.mat_
 
 To run the code, add the data files to the directory `/project_dir/datasets/5f/data/`.
 

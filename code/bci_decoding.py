@@ -53,7 +53,7 @@ from skorch.helper import predefined_split
 # =============================================================================
 # Input parameters
 # =============================================================================
-# 5F dataset subjects: [A, B, C, E, F, G, H, I]
+# 5F dataset subjects: [A, B, C, E, F, G, I]
 # HaLT dataset subjects: [A, B, C, E, F, G, H, I, J, K, L, M]
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f',
@@ -64,7 +64,7 @@ parser.add_argument('--test_set', type=str, default='validation',
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
-parser.add_argument('--n_epochs', type=int, default=1000)
+parser.add_argument('--n_epochs', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--wd', type=float, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
@@ -136,7 +136,6 @@ if args.model == 'ShallowFBCSPNet':
 			final_conv_length=final_conv_length
 	)
 
-
 # Send model to GPU
 if cuda:
 	model.cuda()
@@ -196,8 +195,9 @@ save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
 		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
 		str(args.h_freq))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
-		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.npy'
+		'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
+		format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
+		format(args.wd,'03')+'.npy'
 
 # Creating the directory if not existing
 if os.path.isdir(os.path.join(args.project_dir, save_dir)) == False:
@@ -251,6 +251,7 @@ plt.tight_layout()
 
 # Saving the figure
 file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_lr-'+str(args.lr)+'_tbs-'+\
-		format(args.batch_size,'03')+'_wd-'+str(args.wd)+'.jpg'
+		'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
+		format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
+		format(args.wd,'03')+'.jpg'
 plt.savefig(os.path.join(save_dir, file_name_plot))
