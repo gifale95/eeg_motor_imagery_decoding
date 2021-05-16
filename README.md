@@ -13,11 +13,11 @@ conda activate dnn_bci
 
 
 ## EEG motor imagery datasets
-Here we decode two publicly available EEG BCI datasets: **5F** and **HaLT**. For the decoding analysis, the 19-EEG-channels signal is downsampled to 100Hz, and 150 one-second trials are selected for each motor imagery condition.
+Here two publicly available EEG BCI datasets are decoded: **5F** and **HaLT**. For the decoding analysis, the 19-EEG-channels signal is downsampled to 100Hz, and 150 one-second trials are selected for each motor imagery condition.
 The data along with the accompanying paper can be found at [(Kaya et al., 2018)][kaya].
 
 #### 5F dataset
-This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. The following files were used for the analyses:
+This is a motor imagery dataset of the 5 hand fingers movement: thumb, index finger, middle finger, ring finger, pinkie finger. The following files are used for the analyses:
 1. _5F-SubjectA-160405-5St-SGLHand.mat_
 2. _5F-SubjectB-160316-5St-SGLHand.mat_
 3. _5F-SubjectC-160429-5St-SGLHand-HFREQ.mat_
@@ -31,7 +31,7 @@ To run the code, add the data files to the directory `/project_dir/datasets/5f/d
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 #### HaLT dataset
-This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. All data files were used for the analyses except:
+This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. All data files are used for the analyses except:
 - _HaLTSubjectI1606286StLRHandLegTongue.mat_
 
 To run the code, add the data files to the directory `/project_dir/datasets/halt/data/`.
