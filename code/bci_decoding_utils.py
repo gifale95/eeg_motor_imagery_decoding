@@ -43,12 +43,15 @@ def load_5f_halt(args):
 	# Loading only one subject for intra-subject analysis
 	if args.inter_subject == False:
 		used_files = []
-		for i,file in enumerate(files):
+		for file in files:
 			if 'Subject'+args.test_sub in file: used_files.append(file)
+	else:
+		used_files = files
 
 	### Loading and preprocessing the .mat data ###
-	for i, file in enumerate(used_files):
+	for file in used_files:
 		print('\n\nData file --> '+file+'\n\n')
+		current_sub = file.partition('Subject')[2][0]
 		data = io.loadmat(os.path.join(data_dir, file),
 				chars_as_strings=True)['o']
 		sfreq = np.asarray(data[0][0]['sampFreq'][0])
@@ -97,7 +100,7 @@ def load_5f_halt(args):
 				idx_val[np.where(events[:,2] == e+1)[0][100:125],e] = True
 				idx_test[np.where(events[:,2] == e+1)[0][125:150],e] = True
 			else:
-				if args.test_sub == i+1:
+				if args.test_sub == current_sub:
 					idx_val[np.where(events[:,2] == e+1)[0][0:75],e] = True
 					idx_test[np.where(events[:,2] == e+1)[0][75:150],e] = True
 				else:
@@ -134,7 +137,7 @@ def load_5f_halt(args):
 			raw_val.set_annotations(annotations_val)
 			raw_test.set_annotations(annotations_test)
 		else:
-			if args.test_sub == i+1:
+			if args.test_sub == current_sub:
 				annotations_val = mne.annotations_from_events(events_val, sfreq,
 						event_desc=event_desc)
 				annotations_test = mne.annotations_from_events(events_test,
@@ -156,18 +159,15 @@ def load_5f_halt(args):
 				raw_train.set_annotations(annotations_train)
 
 		### Converting to BaseConcatDataset format ###
-		description_train = {'subject': args.test_sub, 'session': i+1,
-				'partition': 'training'}
-		description_val = {'subject': args.test_sub, 'session': i+1,
-				'partition': 'validation'}
-		description_test = {'subject': args.test_sub, 'session': i+1,
-				'partition': 'test'}
+		description_train = {'subject': current_sub, 'partition': 'training'}
+		description_val = {'subject': current_sub, 'partition': 'validation'}
+		description_test = {'subject': current_sub, 'partition': 'test'}
 		if args.inter_subject == False:
 			dataset.append(BaseDataset(raw_train, description_train))
 			dataset.append(BaseDataset(raw_val, description_val))
 			dataset.append(BaseDataset(raw_test, description_test))
 		else:
-			if args.test_sub == i+1:
+			if args.test_sub == current_sub:
 				dataset.append(BaseDataset(raw_val, description_val))
 				dataset.append(BaseDataset(raw_test, description_test))
 			else:

@@ -54,19 +54,19 @@ from skorch.helper import predefined_split
 # Input parameters
 # =============================================================================
 # 5F dataset subjects: [A, B, C, E, F, G, I]
-# HaLT dataset subjects: [A, B, C, E, F, G, H, I, J, K, L, M]
+# HaLT dataset subjects: [A, B, C, E, F, G, I, J, K, L, M]
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f',
 		choices=['halt', '5f'])
 parser.add_argument('--test_sub', type=str, default='A')
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
-parser.add_argument('--inter_subject', type=bool, default=False)
+parser.add_argument('--inter_subject', type=bool, default=True)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--n_epochs', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--wd', type=float, default=1)
+parser.add_argument('--wd', type=float, default=0.01)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
@@ -110,8 +110,6 @@ args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
 		args.sfreq)
 args.nchan = dataset.datasets[0].raw.info['nchan']
 args.ch_names = dataset.datasets[0].raw.info['ch_names']
-if args.inter_subject == False:
-	args.n_sessions = len(np.unique(dataset.description['session']))
 
 # When using cropped trials, the window size is kept at the total trial length
 # (without start offset) for computational efficiency.
