@@ -10,6 +10,8 @@ test_set : str
 		Used data for testing.
 inter_subject : bool
 		Whether to apply or not inter-subject learning.
+sfreq : int
+		Downsampling frequency of EEG data.
 trial_start_offset_seconds : float
 		Start offset from original trial onsets, in seconds.
 model : str
@@ -29,7 +31,7 @@ project_dir : str
 
 Output
 -------
-Saving of training history and decoding accuracies.
+Saving of training history and training statistics.
 
 """
 
@@ -62,6 +64,7 @@ parser.add_argument('--test_sub', type=str, default='A')
 parser.add_argument('--test_set', type=str, default='validation',
 		choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--sfreq', default=100, type=int)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
 parser.add_argument('--n_epochs', type=int, default=500)
@@ -103,7 +106,6 @@ dataset = load_5f_halt(args)
 
 # Getting EEG data info
 args.n_classes = len(np.unique(dataset.datasets[0].raw.annotations.description))
-args.sfreq = dataset.datasets[0].raw.info['sfreq']
 args.l_freq = dataset.datasets[0].raw.info['highpass']
 args.h_freq = dataset.datasets[0].raw.info['lowpass']
 args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
@@ -183,15 +185,12 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 # =============================================================================
 results = {
 		'history': clf.history,
-		'y_true': np.asarray(valid_set.get_metadata()['target']),
-		'y_pred': clf.predict(valid_set),
 		'args': args
 }
 
 save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
 		'sub-'+args.test_sub, 'model-'+args.model, 'hz-'+
-		format(int(args.sfreq),'04'), 'lfreq-'+str(args.l_freq)+'_hfreq-'+
-		str(args.h_freq))
+		format(int(args.sfreq),'04'))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
 		'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
 		format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\

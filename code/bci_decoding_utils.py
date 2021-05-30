@@ -79,8 +79,8 @@ def load_5f_halt(args):
 		events = events[idx]
 		# Drop stimuli channel
 		raw_train.pick_types(eeg=True)
-		# Downsampling the data to 100Hz
-		raw_train.resample(100)
+		# Downsampling the data
+		raw_train.resample(args.sfreq)
 
 		### Dividing events into training, validation and test ###
 		# For intra-subject decoding 4/6 of the data of the subject of interest
