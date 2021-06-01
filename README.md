@@ -77,5 +77,5 @@ The CNN models have been trained using the following parameters:
 
 Results are shown for the training epochs which yielded highest decoding accuracies.
 
-![5F dataset results table](https://user-images.githubusercontent.com/50326481/120346646-dae5b880-c2fb-11eb-88e4-696406361433.png)
-![HaLT dataset results table](https://user-images.githubusercontent.com/50326481/120346656-dcaf7c00-c2fb-11eb-9949-c41319d9beed.png)
+![5F dataset results table](https://user-images.githubusercontent.com/50326481/120348271-51cf8100-c2fd-11eb-9a37-c5120e707ae1.png)
+![HaLT dataset results table](https://user-images.githubusercontent.com/50326481/120348279-5431db00-c2fd-11eb-92bc-19110dd2e4f7.png)
