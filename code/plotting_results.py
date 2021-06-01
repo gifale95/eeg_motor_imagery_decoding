@@ -30,6 +30,7 @@ import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 
 # =============================================================================
@@ -117,18 +118,20 @@ inter_test_acc = np.append(inter_test_acc, np.mean(inter_test_acc))
 # Putting all results into one matrix
 data = np.dstack((intra_val_acc, intra_test_acc, inter_val_acc,
 		inter_test_acc)).squeeze()
-# Transforming the data into percentages
-data = data * 100
+# Transforming the data into percentages, with 1 decimal place
+data = np.round((data * 100), 1)
 del intra_val_acc, intra_test_acc, inter_val_acc, inter_test_acc
 
 
 # =============================================================================
-# Plotting the decoding accuracies onto tables
+# Inserting the decoding accuracies onto tables
 # =============================================================================
+# Table parameters
 matplotlib.rcParams['font.sans-serif'] = 'Liberation Serif'
 matplotlib.rcParams['font.family'] = 'sans-serif'
 matplotlib.rcParams['font.size'] = 25
 
+# Adding the data
 col_labels = ['Intra-subjects validation data', 'Intra-subjects test data',
 		'Inter-subjects validation data', 'Inter-subjects test data']
 fig, ax = plt.subplots()
@@ -143,9 +146,14 @@ table = ax.table(
 	loc ='upper left',
 	)
 table.auto_set_font_size(False)
+# Table title
 if args.dataset == '5f':
 	dataset_name = '5F'
 else:
 	dataset_name = 'HaLT'
 ax.set_title('Decoding accuracy (%), dataset '+dataset_name, fontweight ="bold",
 		fontsize=35)
+# Bold first row and column
+for (row, col), cell in table.get_celld().items():
+	if (row == 0) or (col == -1):
+		cell.set_text_props(fontproperties=FontProperties(weight='bold'))

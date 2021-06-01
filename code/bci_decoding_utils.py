@@ -226,4 +226,3 @@ def windowing_data(dataset, args):
 
 	### Output ###
 	return valid_set, train_set
-

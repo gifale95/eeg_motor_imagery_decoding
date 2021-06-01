@@ -1,3 +1,16 @@
+# =============================================================================
+# TO DO
+# =============================================================================
+# 1. Modify plot so that axes remain stable
+
+# 2. Finalize GitHub page, writing down well what I did and the hyperparameters
+	# I used
+
+# 2. Use Perceiver
+
+# 3. Data augmentation techniques (also beneficial for regularization)
+
+
 """Decoding of motor imagery states using convolutional neural networks.
 
 Parameters

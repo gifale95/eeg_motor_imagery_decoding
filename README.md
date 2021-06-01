@@ -48,7 +48,7 @@ To run the code, add the data files to the directory `/project_dir/datasets/halt
 
 
 
-## CNN models
+## CNN model
 The decoding analysis is performed using the shallow ConvNet architecture described in [Schirrmeister et al., 2018][schirrmeister].
 
 [schirrmeister]: https://arxiv.org/abs/1703.05051v1
@@ -65,3 +65,17 @@ This is analogous to a data augmentation technique: instead of full trials, the 
 ## Inter-subject learning
 Inter-subject learning is a zero-shot learning approach which aims at understanding how well a CNN trained on decoding the motor imagery trials of a set of subjects is capable of generalizing its decoding performance on a held-out subject. In other words, this is testing the possibility of pre-trained EEG BCI devices which readily work on novel subjects without the need of any training data from these subjects.
 
+
+
+## Model training and results
+The CNN models have been trained using the following parameters:
+
+- **Learning rate:** 0.001
+- **Weight decay:** 0.01
+- **Batch size:** 128
+- **Training epochs:** 500
+
+Results are shown for the training epochs which yielded highest decoding accuracies.
+
+![5F dataset results table](https://user-images.githubusercontent.com/50326481/120346646-dae5b880-c2fb-11eb-88e4-696406361433.png)
+![HaLT dataset results table](https://user-images.githubusercontent.com/50326481/120346656-dcaf7c00-c2fb-11eb-9949-c41319d9beed.png)
