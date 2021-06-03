@@ -37,7 +37,7 @@ from matplotlib.font_manager import FontProperties
 # Input parameters
 # =============================================================================
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='5f',
+parser.add_argument('--dataset', type=str, default='halt',
 		choices=['halt', '5f'])
 parser.add_argument('--sfreq', default=100, type=int)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
@@ -149,10 +149,14 @@ table.auto_set_font_size(False)
 # Table title
 if args.dataset == '5f':
 	dataset_name = '5F'
+	n_cond = 5
 else:
 	dataset_name = 'HaLT'
-ax.set_title('Decoding accuracy (%), dataset '+dataset_name, fontweight ="bold",
-		fontsize=35)
+	n_cond = 6
+chance = np.round((100/n_cond), 2)
+title = 'Decoding accuracy (%)\nDataset: ' + dataset_name + ' - Conditions: ' +\
+		str(n_cond) + ' - Chance: ' + format(chance,'03') + '%'
+ax.set_title(title, fontweight ="bold", fontsize=35)
 # Bold first row and column
 for (row, col), cell in table.get_celld().items():
 	if (row == 0) or (col == -1):

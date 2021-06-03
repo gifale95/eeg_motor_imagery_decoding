@@ -13,7 +13,7 @@ conda activate dnn_bci
 
 
 ## EEG motor imagery datasets
-Here two publicly available EEG BCI datasets are decoded: **5F** and **HaLT**. For the decoding analysis, the 19-EEG-channels signal is downsampled to 100Hz, and 150 one-second trials are selected for each motor imagery condition.
+Here two publicly available EEG BCI datasets are decoded: **5F** and **HaLT**. For the decoding analysis, the 19-EEG-channels signal is downsampled to 100Hz, and 150 trials are selected for each motor imagery condition. Each trial is epoched in the range [-250ms 1000ms] relative to onset.
 The data along with the accompanying paper can be found at [(Kaya et al., 2018)][kaya].
 
 #### 5F dataset
@@ -75,7 +75,7 @@ The CNN models have been trained using the following parameters:
 - **Batch size:** 128
 - **Training epochs:** 500
 
-Results are shown for the training epochs which yielded highest decoding accuracies.
+Results are shown for the training epochs which yielded highest decoding accuracies:
 
-![5F dataset results table](https://user-images.githubusercontent.com/50326481/120348271-51cf8100-c2fd-11eb-9a37-c5120e707ae1.png)
-![HaLT dataset results table](https://user-images.githubusercontent.com/50326481/120348279-5431db00-c2fd-11eb-92bc-19110dd2e4f7.png)
+![5F dataset results table](https://user-images.githubusercontent.com/50326481/120665912-7a39b580-c48c-11eb-91c7-e57ed7d47673.png)
+![HaLT dataset results table](https://user-images.githubusercontent.com/50326481/120665901-786ff200-c48c-11eb-8f7d-0ebda8c4369c.png)
