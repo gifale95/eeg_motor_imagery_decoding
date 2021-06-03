@@ -1,5 +1,5 @@
-# Decoding Motor Imagery conditions from EEG data using Convolutional Neural Networks
-This repository provides Python code for the decoding of different motor imagery conditions from raw EEG data, using a Convolutionsl Neural Network (CNN).
+# Decoding Motor Imagery conditions from EEG data using a Convolutional Neural Network
+This repository provides Python code for the decoding of different motor imagery conditions from raw EEG data, using a Convolutional Neural Network (CNN).
 
 
 
