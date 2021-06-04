@@ -31,7 +31,7 @@ To run the code, add the data files to the directory `/project_dir/datasets/5f/d
 [kaya]: https://figshare.com/collections/A_large_electroencephalographic_motor_imagery_dataset_for_electroencephalographic_brain_computer_interfaces/3917698
 
 #### HaLT dataset
-This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, middle finger, passive/neutral state, left leg, right leg, tongue. The following files are used for the analyses:
+This is a dataset consisting of 6 motor imagery conditions: left hand, right hand, left foot/leg, right foot/leg, tongue, passive/neutral state. The following files are used for the analyses:
 1. _HaLTSubjectA1602236StLRHandLegTongue.mat_
 2. _HaLTSubjectB1602186StLRHandLegTongue.mat_
 3. _HaLTSubjectC1602246StLRHandLegTongue.mat_
