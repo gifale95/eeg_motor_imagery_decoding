@@ -18,6 +18,7 @@ def load_5f_halt(args):
 	from scipy import io
 	import numpy as np
 	import mne
+	from sklearn.utils import resample
 	from braindecode.datautil import exponential_moving_standardize
 	from braindecode.datasets import BaseDataset, BaseConcatDataset
 
@@ -83,11 +84,12 @@ def load_5f_halt(args):
 		raw_train.resample(args.sfreq)
 
 		### Dividing events into training, validation and test ###
-		# For intra-subject decoding 4/6 of the data of the subject of interest
-		# is used for training, 1/6 for validation and 1/6 for testing.
-		# For inter-subject decoding 1/2 of the data of the subject of interest
-		# is used for validation and 1/2 for testing. All the data from the
-		# other subjects is used for training.
+		# For intra-subject decoding, 25 trials per condition are used for
+		# validation, 25 trials for testing, and the remaining trials are used
+		# for training.
+		# For inter-subject decoding 75 trials per condition of the subject of
+		# interest are used for validation and 75 for testing. All the data
+		# from the other subjects is used for training.
 		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
 				dtype=bool)
 		idx_val = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
@@ -96,15 +98,16 @@ def load_5f_halt(args):
 				dtype=bool)
 		for e in range(len(np.unique(events[:,2]))):
 			if args.inter_subject == False:
-				idx_train[np.where(events[:,2] == e+1)[0][0:100],e] = True
-				idx_val[np.where(events[:,2] == e+1)[0][100:125],e] = True
-				idx_test[np.where(events[:,2] == e+1)[0][125:150],e] = True
+				shuf = resample(np.where(events[:,2] == e+1)[0], replace=False)
+				idx_val[shuf[:25],e] = True
+				idx_test[shuf[25:50],e] = True
+				idx_train[shuf[50:],e] = True
 			else:
 				if args.test_sub == current_sub:
 					idx_val[np.where(events[:,2] == e+1)[0][0:75],e] = True
 					idx_test[np.where(events[:,2] == e+1)[0][75:150],e] = True
 				else:
-					idx_train[np.where(events[:,2] == e+1)[0][0:150],e] = True
+					idx_train[np.where(events[:,2] == e+1)[0],e] = True
 		idx_train = np.sum(idx_train, 1, dtype=bool)
 		idx_val = np.sum(idx_val, 1, dtype=bool)
 		idx_test = np.sum(idx_test, 1, dtype=bool)

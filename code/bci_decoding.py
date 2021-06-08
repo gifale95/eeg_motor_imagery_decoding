@@ -61,9 +61,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f',
 		choices=['halt', '5f'])
 parser.add_argument('--test_sub', type=str, default='A')
-parser.add_argument('--test_set', type=str, default='validation',
+parser.add_argument('--test_set', type=str, default='test',
 		choices=['validation', 'test'])
-parser.add_argument('--inter_subject', type=bool, default=True)
+parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--sfreq', default=100, type=int)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
 parser.add_argument('--model', type=str, default='ShallowFBCSPNet')
@@ -97,11 +97,11 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading and preprocessing the data
 # =============================================================================
-# For intra-subject decoding 4/6 of the data of the subject of interest is used
-# for training, 1/6 for validation and 1/6 for testing.
-# For inter-subject decoding 1/2 of the data of the subject of interest is used
-# for validation and 1/2 for testing. All the data from the other subjects is
-# used for training.
+# For intra-subject decoding, 25 trials per condition are used for validation,
+# 25 trials for testing, and the remaining trials are used for training.
+# For inter-subject decoding 75 trials per condition of the subject of interest
+# are used for validation and 75 for testing. All the data from the other
+# subjects is used for training.
 dataset = load_5f_halt(args)
 
 # Getting EEG data info
