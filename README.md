@@ -73,7 +73,7 @@ The CNN models have been trained using the following parameters:
 - **Learning rate:** 0.001
 - **Weight decay:** 0.01
 - **Batch size:** 128
-- **Training epochs:** 300
+- **Training epochs:** 500
 
 Results are shown for the training epochs which yielded highest decoding accuracies:
 
