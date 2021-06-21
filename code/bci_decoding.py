@@ -97,8 +97,8 @@ set_random_seeds(seed=args.seed, cuda=cuda)
 # =============================================================================
 # Loading and preprocessing the data
 # =============================================================================
-# For intra-subject decoding, 25 trials per condition are used for validation,
-# 25 trials for testing, and the remaining trials are used for training.
+# For intra-subject decoding, 10 trials per condition are used for validation,
+# 10 trials for testing, and the remaining trials are used for training.
 # For inter-subject decoding 75 trials per condition of the subject of interest
 # are used for validation and 75 for testing. All the data from the other
 # subjects is used for training.

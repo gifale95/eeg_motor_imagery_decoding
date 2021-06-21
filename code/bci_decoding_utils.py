@@ -84,8 +84,8 @@ def load_5f_halt(args):
 		raw_train.resample(args.sfreq)
 
 		### Dividing events into training, validation and test ###
-		# For intra-subject decoding, 25 trials per condition are used for
-		# validation, 25 trials for testing, and the remaining trials are used
+		# For intra-subject decoding, 10 trials per condition are used for
+		# validation, 10 trials for testing, and the remaining trials are used
 		# for training.
 		# For inter-subject decoding 75 trials per condition of the subject of
 		# interest are used for validation and 75 for testing. All the data
@@ -99,9 +99,9 @@ def load_5f_halt(args):
 		for e in range(len(np.unique(events[:,2]))):
 			if args.inter_subject == False:
 				shuf = resample(np.where(events[:,2] == e+1)[0], replace=False)
-				idx_val[shuf[:25],e] = True
-				idx_test[shuf[25:50],e] = True
-				idx_train[shuf[50:],e] = True
+				idx_val[shuf[:10],e] = True
+				idx_test[shuf[10:20],e] = True
+				idx_train[shuf[20:],e] = True
 			else:
 				if args.test_sub == current_sub:
 					idx_val[np.where(events[:,2] == e+1)[0][0:75],e] = True
