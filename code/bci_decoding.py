@@ -3,31 +3,31 @@
 Parameters
 ----------
 dataset : str
-		Used dataset.
+	Used dataset.
 test_sub : str
-		Used test subject.
+	Used test subject.
 test_set : str
-		Used data for testing.
+	Used data for testing.
 inter_subject : bool
-		Whether to apply or not inter-subject learning.
+	Whether to apply or not inter-subject learning.
 sfreq : int
-		Downsampling frequency of EEG data.
+	Downsampling frequency of EEG data.
 trial_start_offset_seconds : float
-		Start offset from original trial onsets, in seconds.
+	Start offset from original trial onsets, in seconds.
 model : str
-		Used neural network model.
+	Used neural network model.
 n_epochs : int
-		Number of training epochs.
+	Number of training epochs.
 lr : float
-		Learning rate.
+	Learning rate.
 wd : float
-		Weight decay coefficient.
+	Weight decay coefficient.
 batch_size : int
-		Batch size for weight update.
+	Batch size for weight update.
 seed : int
-		Random seed to make results reproducible.
+	Random seed to make results reproducible.
 project_dir : str
-		Directory of the project folder.
+	Directory of the project folder.
 
 Output
 -------
@@ -59,10 +59,10 @@ from skorch.helper import predefined_split
 # HaLT dataset subjects: [A, B, C, E, F, G, I, J, K, L, M]
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='5f',
-		choices=['halt', '5f'])
+	choices=['halt', '5f'])
 parser.add_argument('--test_sub', type=str, default='A')
 parser.add_argument('--test_set', type=str, default='test',
-		choices=['validation', 'test'])
+	choices=['validation', 'test'])
 parser.add_argument('--inter_subject', type=bool, default=False)
 parser.add_argument('--sfreq', default=100, type=int)
 parser.add_argument('--trial_start_offset_seconds', type=float, default=-0.25)
@@ -73,7 +73,7 @@ parser.add_argument('--wd', type=float, default=0.01)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--seed', type=int, default=20200220)
 parser.add_argument('--project_dir', default='/home/ale/aaa_stuff/PhD/'
-		'studies/dnn_bci', type=str)
+	'studies/dnn_bci', type=str)
 args = parser.parse_args()
 
 # Printing the arguments
@@ -109,14 +109,14 @@ args.n_classes = len(np.unique(dataset.datasets[0].raw.annotations.description))
 args.l_freq = dataset.datasets[0].raw.info['highpass']
 args.h_freq = dataset.datasets[0].raw.info['lowpass']
 args.trial_start_offset_samples = int(args.trial_start_offset_seconds *
-		args.sfreq)
+	args.sfreq)
 args.nchan = dataset.datasets[0].raw.info['nchan']
 args.ch_names = dataset.datasets[0].raw.info['ch_names']
 
 # When using cropped trials, the window size is kept at the total trial length
 # (without start offset) for computational efficiency.
 args.input_window_samples = int(
-		dataset.datasets[0].raw.annotations.duration[0] * args.sfreq)
+	dataset.datasets[0].raw.annotations.duration[0] * args.sfreq)
 
 
 # =============================================================================
@@ -130,10 +130,10 @@ final_conv_length = 1
 
 if args.model == 'ShallowFBCSPNet':
 	model = ShallowFBCSPNet(
-			in_chans=args.nchan,
-			n_classes=args.n_classes,
-			input_window_samples=args.input_window_samples,
-			final_conv_length=final_conv_length
+		in_chans=args.nchan,
+		n_classes=args.n_classes,
+		input_window_samples=args.input_window_samples,
+		final_conv_length=final_conv_length
 	)
 
 # Send model to GPU
@@ -151,7 +151,7 @@ to_dense_prediction_model(model)
 # To know the models’ receptive field, we calculate the shape of model output
 # for a dummy input. The model's receptive field size defines the crop size.
 args.n_preds_per_input = get_output_shape(model, args.nchan,
-		args.input_window_samples)[2]
+	args.input_window_samples)[2]
 
 valid_set, train_set = windowing_data(dataset, args)
 del dataset
@@ -184,17 +184,17 @@ clf.fit(train_set, y=None, epochs=args.n_epochs)
 # Storing the results into a dictionary and saving
 # =============================================================================
 results = {
-		'history': clf.history,
-		'args': args
+	'history': clf.history,
+	'args': args
 }
 
 save_dir = os.path.join(args.project_dir, 'results', 'dataset-'+args.dataset,
-		'sub-'+args.test_sub, 'model-'+args.model, 'hz-'+
-		format(int(args.sfreq),'04'))
+	'sub-'+args.test_sub, 'model-'+args.model, 'hz-'+
+	format(int(args.sfreq),'04'))
 file_name_data = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
-		format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
-		format(args.wd,'03')+'.npy'
+	'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
+	format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
+	format(args.wd,'03')+'.npy'
 
 # Creating the directory if not existing
 if os.path.isdir(os.path.join(args.project_dir, save_dir)) == False:
@@ -211,19 +211,19 @@ import pandas as pd
 
 # Extract loss and accuracy values for plotting from history object
 results_columns = ['train_loss', 'valid_loss', 'train_accuracy',
-		'valid_accuracy']
+	'valid_accuracy']
 df = pd.DataFrame(clf.history[:, results_columns], columns=results_columns,
-		index=clf.history[:, 'epoch'])
+	index=clf.history[:, 'epoch'])
 
 # Get percent of misclass for better visual comparison to loss
 df = df.assign(train_misclass=100 - 100 * df.train_accuracy,
-		valid_misclass=100 - 100 * df.valid_accuracy)
+	valid_misclass=100 - 100 * df.valid_accuracy)
 
 plt.style.use('seaborn')
 fig, ax1 = plt.subplots(figsize=(20, 10))
 df.loc[:, ['train_loss', 'valid_loss']].plot(
-		ax=ax1, style=['-', ':'], marker='o', color='tab:blue', legend=False,
-		fontsize=14)
+	ax=ax1, style=['-', ':'], marker='o', color='tab:blue', legend=False,
+	fontsize=14)
 
 ax1.tick_params(axis='y', labelcolor='tab:blue', labelsize=14)
 ax1.set_ylabel("Loss", color='tab:blue', fontsize=14)
@@ -231,7 +231,7 @@ ax1.set_ylabel("Loss", color='tab:blue', fontsize=14)
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 
 df.loc[:, ['train_misclass', 'valid_misclass']].plot(
-		ax=ax2, style=['-', ':'], marker='o', color='tab:red', legend=False)
+	ax=ax2, style=['-', ':'], marker='o', color='tab:red', legend=False)
 ax2.tick_params(axis='y', labelcolor='tab:red', labelsize=14)
 ax2.set_ylabel("Misclassification Rate [%]", color='tab:red', fontsize=14)
 ax2.set_ylim(ax2.get_ylim()[0], 85) # make some room for legend
@@ -240,15 +240,15 @@ ax1.set_xlabel("Epoch", fontsize=14)
 # Where some data has already been plotted to ax
 handles = []
 handles.append(Line2D([0], [0], color='black', linewidth=1, linestyle='-',
-		label='Train'))
+	label='Train'))
 handles.append(Line2D([0], [0], color='black', linewidth=1, linestyle=':',
-		label='Valid'))
+	label='Valid'))
 plt.legend(handles, [h.get_label() for h in handles], fontsize=14)
 plt.tight_layout()
 
 # Saving the figure
 file_name_plot = 'intersub-'+str(args.inter_subject)+'_data-'+args.test_set+\
-		'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
-		format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
-		format(args.wd,'03')+'.jpg'
+	'_epochs-'+format(args.n_epochs,'03')+'_tbs-'+\
+	format(args.batch_size,'03')+'_lr-'+format(args.lr,'05')+'_wd-'+\
+	format(args.wd,'03')+'.jpg'
 plt.savefig(os.path.join(save_dir, file_name_plot))
