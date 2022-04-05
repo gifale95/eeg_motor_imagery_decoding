@@ -5,12 +5,12 @@ def load_5f_halt(args):
 	Parameters
 	----------
 	args : Namespace
-			Input arguments.
+		Input arguments.
 
 	Returns
 	----------
 	dataset : BaseConcatDataset
-			BaseConcatDataset of raw MNE arrays.
+		BaseConcatDataset of raw MNE arrays.
 
 	"""
 
@@ -25,10 +25,10 @@ def load_5f_halt(args):
 	### Channel types ###
 	# Rejecting channels A1, A1, X5 (see paper)
 	ch_names = ['Fp1', 'Fp2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'O1', 'O2',
-			'F7', 'F8', 'T3', 'T4', 'T5', 'T6', 'Fz', 'Cz', 'Pz', 'stim']
+		'F7', 'F8', 'T3', 'T4', 'T5', 'T6', 'Fz', 'Cz', 'Pz', 'stim']
 	ch_types = ['eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg',
-			'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg',
-			'eeg', 'stim']
+		'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg', 'eeg',
+		'eeg', 'stim']
 	idx_chan = np.ones(22, dtype=bool)
 	unused_chans = np.asarray((10, 11, 21))
 	idx_chan[unused_chans] = False
@@ -54,7 +54,7 @@ def load_5f_halt(args):
 		print('\n\nData file --> '+file+'\n\n')
 		current_sub = file.partition('Subject')[2][0]
 		data = io.loadmat(os.path.join(data_dir, file),
-				chars_as_strings=True)['o']
+			chars_as_strings=True)['o']
 		sfreq = np.asarray(data[0][0]['sampFreq'][0])
 		marker = np.transpose(np.asarray(data[0][0]['marker']))
 		data = np.transpose(np.asarray(data[0][0]['data']))[idx_chan,:]
@@ -71,7 +71,7 @@ def load_5f_halt(args):
 
 		### Get events and downsample data ###
 		events = mne.find_events(raw_train, stim_channel='stim', output='onset',
-				consecutive='increasing')
+			consecutive='increasing')
 		# Drop unused events
 		idx = np.ones(events.shape[0], dtype=bool)
 		for e in range(len(idx)):
@@ -91,11 +91,11 @@ def load_5f_halt(args):
 		# interest are used for validation and 75 for testing. All the data
 		# from the other subjects is used for training.
 		idx_train = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
-				dtype=bool)
+			dtype=bool)
 		idx_val = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
-				dtype=bool)
+			dtype=bool)
 		idx_test = np.zeros((events.shape[0],len(np.unique(events[:,2]))),
-				dtype=bool)
+			dtype=bool)
 		for e in range(len(np.unique(events[:,2]))):
 			if args.inter_subject == False:
 				shuf = resample(np.where(events[:,2] == e+1)[0], replace=False)
@@ -118,17 +118,17 @@ def load_5f_halt(args):
 		### Creating the raw data annotations ###
 		if args.dataset == '5f':
 			event_desc = {1: 'thumb', 2: 'index_finger', 3: 'middle_finger',
-					4: 'ring_finger', 5: 'pinkie_finger'}
+				4: 'ring_finger', 5: 'pinkie_finger'}
 		elif args.dataset == 'halt':
 			event_desc = {1: 'left_hand', 2: 'right_hand', 3: 'passive_neutral',
-					4: 'left_leg', 5: 'tongue', 6: 'right_leg'}
+				4: 'left_leg', 5: 'tongue', 6: 'right_leg'}
 		if args.inter_subject == False:
 			annotations_train = mne.annotations_from_events(events_train, sfreq,
-					event_desc=event_desc)
+				event_desc=event_desc)
 			annotations_val = mne.annotations_from_events(events_val, sfreq,
-					event_desc=event_desc)
+				event_desc=event_desc)
 			annotations_test = mne.annotations_from_events(events_test, sfreq,
-					event_desc=event_desc)
+				event_desc=event_desc)
 			# Creating 1s trials
 			annotations_train.duration = np.repeat(1., len(events_train))
 			annotations_val.duration = np.repeat(1., len(events_val))
@@ -142,9 +142,9 @@ def load_5f_halt(args):
 		else:
 			if args.test_sub == current_sub:
 				annotations_val = mne.annotations_from_events(events_val, sfreq,
-						event_desc=event_desc)
+					event_desc=event_desc)
 				annotations_test = mne.annotations_from_events(events_test,
-						sfreq, event_desc=event_desc)
+					sfreq, event_desc=event_desc)
 				# Creating 1s trials
 				annotations_val.duration = np.repeat(1., len(events_val))
 				annotations_test.duration = np.repeat(1., len(events_test))
@@ -155,7 +155,7 @@ def load_5f_halt(args):
 				raw_test.set_annotations(annotations_test)
 			else:
 				annotations_train = mne.annotations_from_events(events_train,
-						sfreq, event_desc=event_desc)
+					sfreq, event_desc=event_desc)
 				# Creating 1s trials
 				annotations_train.duration = np.repeat(1., len(events_train))
 				# Adding annotations to raw data
@@ -188,16 +188,16 @@ def windowing_data(dataset, args):
 	Parameters
 	----------
 	dataset : BaseConcatDataset
-			BaseConcatDataset of raw MNE arrays.
+		BaseConcatDataset of raw MNE arrays.
 	args : Namespace
-			Input arguments.
+		Input arguments.
 
 	Returns
 	----------
 	valid_data : BaseConcatDataset
-			BaseConcatDataset of windowed validation data.
+		BaseConcatDataset of windowed validation data.
 	train_data : BaseConcatDataset
-			BaseConcatDataset of windowed training data.
+		BaseConcatDataset of windowed training data.
 
 	"""
 
